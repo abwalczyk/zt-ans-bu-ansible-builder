@@ -37,7 +37,7 @@ containers:
       - rm -rf /tmp/repo
 virtualmachines:
   - name: "control"
-    image: "base-zero-aap-2.5-container-ce"
+    image: "base-zero-aap-2.5-container-che"
     memory: "16G"
     cores: 4
     image_size: "30Gi"
@@ -116,40 +116,4 @@ virtualmachines:
           fH5qke1XR5LFGpndX1GuSVBhdZq94x0aGXWTQCDNIPQ3QtrQ64PBF1vRFdJ6o/FI
           uEOWpQhGYHMC0A==
           -----END CERTIFICATE-----
-  - name: "node01"
-    image: "rhel-9.5"
-    memory: "2G"
-    cores: 2
-    image_size: "30Gi"
-    tags:
-      - key: "AnsibleGroup"
-        value: "isolated"
-    networks:
-      - default
-    userdata: |-
-      #cloud-config
-      user: rhel
-      password: ansible123!
-      chpasswd: { expire: False }  
-      runcmd:
-        - echo "PasswordAuthentication yes" > /etc/ssh/sshd_config.d/50-cloud-init.conf
-        - systemctl reload sshd
-  - name: "node02"
-    image: "rhel-9.5"
-    memory: "2G"
-    cores: 2
-    image_size: "30Gi"
-    tags:
-      - key: "AnsibleGroup"
-        value: "isolated"
-    networks:
-      - default
-    userdata: |-
-      #cloud-config
-      user: rhel
-      password: ansible123!
-      chpasswd: { expire: False }
-      runcmd:
-        - echo "PasswordAuthentication yes" > /etc/ssh/sshd_config.d/50-cloud-init.conf
-        - systemctl reload sshd
   

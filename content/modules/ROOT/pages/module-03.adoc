@@ -1,155 +1,202 @@
-= Change Management
-:toc:
-:toc-placement!:
+👋 Introduction
+===
+In this section we will create an execution environment using `ansible-builder`.
 
-Learn how to automate ServiceNow change management by creating change requests to address problems and incidents.
+For this challenge we are building an execution environment and the collection will be pulled from the Automation hub that is baked into this lab. Our task for this challenge is to create an execution environment with the `ansible.netcommon` collection form **Automation Hub** on top of the minimal execution environment.
 
-toc::[]
+*Note*: A quick note before we dive-in, the editor we are is VSCode and it maybe unfamiliar for some folks. But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge, if you are confused at any time there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any yaml errors.
 
-[[introduction]]
-== Introduction
+Please go through the tasks in this challenges to understand how to interact with `ansible-builder` v3
 
-In ITIL, a change request represents any addition, modification, or removal made to address problems or improve IT services. ServiceNow change management enables organizations to:
+☑️ Task - Basic definition file from last challenge
+===
 
-* Control and track all changes to IT infrastructure
-* Minimize risk through proper planning and approval processes
-* Maintain change records for audit and compliance purposes
-* Coordinate changes with business requirements and schedules
+On the VSCode tab on the left side you will see that we have a directory opened called `minimal-downstream-from-hub` and this directory has a file called as `execution-environment.yml`.
 
-=== Types of Changes
+This file is the same as the one we created from the last challenge when we pulled the collection from Ansible Galaxy. This will be starting point for this challenge and we will slowly build on creating a definition file that can pull the collections from Automation hub.
 
-ServiceNow typically categorizes changes into several types:
+For this task, just verify the content of the definition file to ensure that it matches with what we learned in last challenge.
 
-* **Standard Changes**: Pre-approved, low-risk changes that follow established procedures
-* **Normal Changes**: Regular changes that require approval through the Change Advisory Board (CAB)
-* **Emergency Changes**: Urgent changes needed to resolve critical issues
+☑️ Task - ansible.cfg file
+===
+We have created an `ansible.cfg` file in the files directory adjacent to our definition file.
+![image.png](https://play.instruqt.com/assets/tracks/w3polihv5eqs/49b66e1b2eacbe507d9b83a3fe86cad1/assets/image.png)
 
-=== Change-Problem Relationship
+This directory contains an `ansible.cfg` file which points to the Automation hub in our lab, you can follow the [documentation](https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.4/html/getting_started_with_automation_hub/index) to understand how to build your own `ansible.cfg` file.
 
-Changes are often created to:
+The idea here is to tell `ansible-galaxy` cli about where it needs to look for collections and also provide a token to download the collections from automation hub. We have added the URL of the rh_certified repo(as that repo has the netcommon collection) and the token alongside it.
 
-* Resolve known problems permanently
-* Implement workarounds for ongoing issues
-* Address root causes identified during problem investigation
-* Prevent recurrence of incidents
+With the execution environment build process, as builder would be downloading collection and adding then to the execution environment, it needs to know about the `ansible.cfg` file if you want to build with collections from Automation hub.
 
-=== Review the Playbook
+For this task, just check the content of the `ansible.cfg` file as we will be using the file in the execution environment definition in the next tasks.
 
-A new playbook called `change-attach.yml` has been created in your VS Code workspace.
+☑️ Task - Adding ansible.cfg to the definition file
+===
+The addition of `ansible.cfg` needs to happen in two steps.
 
-.Task: Inspect the change request playbook
+Firstly, we will copy the content of `files` directory to the `_build/configs` directory in the build context.
+Secondly, we will copy the `ansible.cfg` file from the `_build/configs` directory to the ansible config default location on the EE, which is `/etc/ansible/ansible.cfg`
+
+*NOTE*: `_build` directory inside the context directory contains all the additional build files, its important to note the name of this directory as it will be important when you are building custom content into your execution environment , like we are doing in this task.
+
+Add the following two sections to the end of the `execution-environment.yml` file
+
+```
+additional_build_files:
+  # copy arbitary files next to this EE Definition into the build context - we can refer to them later
+  - src: files
+    dest: configs
+
+
+additional_build_steps:
+  prepend_galaxy:
+    - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
+```
+
+In the above section you will see that we added a section called `additional_build_files`, this tells ansible-builder where to copy the additional build files in the context. In this case the `files` directory gets copied to `_build/configs` directory.
+The next section, called `additional_build_steps` tells builder about the additional build steps it needs to take, this section can have multiple subsection and you can consider each subsection as a build stage. In this case, we are prepending steps to the galaxy stage (collection download stage) and telling builder to copy the `ansible.cfg` in `_build/configs` to /etc/ansible/ansible.cfg`
+
+The idea here is to copy the ansible config file to execution environment so that `ansible-galaxy` can point to the local Automation hub.
+
+☑️ Task - Let's re-run ansible-builder
+===
+
+Please open the terminal windown and re-run the ansible-builder.
+
+```
+ansible-builder build -v 3
+```
+
+You will see that the build returns in an SSL certificate error when trying to pull collections from Automation Hub, to fix this you will need to bypass the certificate errors in the definition file.
+
+Let's do that in the next task.
+
+**Note** We will also show how you can add certificates in the next challange.
+
+☑️ Task - Bypass SSL error while building
+===
+To bypass the SSL error add the following section in the `execution-environment.yml` file.
+
+```
+build_arg_defaults:
+  ANSIBLE_GALAXY_CLI_COLLECTION_OPTS: '--ignore-certs'
+```
+
+This option will add the `--ignore-certs` option to the `ansible-galaxy` CLI when ansible-builder is building the execution environment, this is just a workaround we will provide a permanent solution in the next challenge. The idea here is to describe different customizations you can do in the build process. Let's re-run `ansible-builder`
+
+In the Terminal, type the following command again.
+
+```
+ansible-builder build -v 3
+```
+
+This command will take a minute or two to complete
+
+☑️ Task - Let's check what's built
+===
+
+Run the following command to check the image that was created
+
+```
+podman images
+```
+
+You will see that it builds an execution environment called `localhost/ansible-execution-env` by default, this is our execution environment built with the collection we need.
+You can tag the image post build if you want using the podman CLI using the following command, please run this command.
+```
+podman tag localhost/ansible-execution-env localhost/netcommon-hub-ee
+```
+
+☑️ Task - Let's push this EE to Automation Hub
+===
+Automation hub also acts as a registry to store your custom execution environments. To push this execution environment to Automation hub, you need to first tag the EE with a new name and address of the automation hub, please run the following commands.
+
+Login to automation hub with podman
+```
+podman login privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io --tls-verify=false
+```
+
+> Username: `admin`
+>
+> Password: `ansible123!`
+
+Tag your local image
+
+```
+podman tag localhost/ansible-execution-env privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/netcommon-hub-ee
+```
+
+Push image to Automation hub
+
+```
+podman push privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/netcommon-hub-ee --tls-verify=false
+```
+
+Let's verify if the image is pushed to Automation Hub,
+- Go to Automation Hub tab
+- Login using the below credentials
+> Username: `admin`
+>
+> Password: `ansible123!`
+
+- Go to the "Execution Environments" section on the left hand side and you should see the recent execution environment pushed to Automation Hub.
+
+Hurray, you have now created an execution environment with a collection from automation hub by ignoring the certificate errors and pushed it to Automation hub. In the next challange, we will try to fix the certificate errors properly.
+
+✅ Next Challenge
+===
+Press the `Check` button below to go to the next challenge once you’ve completed the tasks.
+
+🐛 Encountered an issue?
 ====
-1. Open the VS Code tab in your lab environment
-2. Locate and open the `change-attach.yml` file
-3. Review the playbook structure and parameters
-4. Note how it references existing problems or incidents
-====
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new).
 
-Key elements to observe:
-
-* Change request categorization and priority
-* Required approval workflows
-* Risk assessment and impact analysis
-* Implementation timeline and rollback plans
-
-[[create]]
-== Create a Change Request
-
-Execute the playbook to create a change request that addresses your problem from Module 2.
-
-.Procedure: Launch the change request job
-====
-1. Navigate to the Automation Controller tab
-2. Go to *Automation Execution* > *Templates*
-3. Locate the `3 - Attach change request (change-attach.yml)` job template
-4. Click the rocket icon (🚀) to launch the job
-5. Monitor the job execution for completion
-====
-
-=== Change Request Details
-
-The playbook will create a change request with:
-
-* **Title**: "Reboot the webserver" (example remediation action)
-* **Description**: Detailed explanation of the proposed change
-* **Justification**: Reference to the related problem or incident
-* **Risk Assessment**: Evaluation of potential impact
-* **Implementation Plan**: Steps to execute the change
-
-Monitor the job output for:
-
-* Change request number assignment
-* Status and state information
-* Any validation or error messages
-
-[[inspect]]
-== Inspect Results
-
-Verify that the change request was successfully created and properly configured.
-
-.Procedure: Verify change request creation
-====
-1. Access the ServiceNow tab using your lab credentials
-2. Navigate to your pre-configured favorites (star icon ⭐)
-3. Select *Change - Open* to view open change requests
-4. Locate your newly created change request
-====
-
-=== Expected Change Request Properties
-
-Look for these key attributes in your change request:
-
-[cols="2,3"]
-|===
-|Field |Expected Value
-
-|Short Description |"Reboot the webserver" or similar remediation action
-|State |"New" or "Assess" depending on configuration
-|Priority |Appropriate based on related problem/incident
-|Category |Software or Hardware as applicable
-|Description |Detailed explanation of the change purpose
-|Justification |Reference to related problem or incident
-|===
-
-=== Additional Field Validation
-
-Verify that other relevant fields have been populated:
-
-* **On Hold Reason**: May be set if approval is pending
-* **Assigned To**: Should reflect the appropriate change implementer
-* **Planned Start/End Dates**: Timeline for change implementation
-* **Risk**: Assessment of potential impact (Low, Medium, High)
-
-== Understanding Change Workflows
-
-This module demonstrates several change management concepts:
-
-* **Automated Change Creation**: Programmatic generation of change requests
-* **Problem-Change Linkage**: Connecting changes to their underlying justification
-* **Standardized Documentation**: Consistent change request formatting
-* **Integration Points**: How changes fit into overall ITSM processes
-
-=== Change Approval Process
-
-In a production environment, your change request would typically:
-
-1. **Assessment**: Technical review of proposed change
-2. **Authorization**: Approval by Change Advisory Board (CAB)
-3. **Scheduling**: Coordination with business requirements
-4. **Implementation**: Execution of the approved change
-5. **Review**: Post-implementation validation and closure
-
-== Next Steps
-
-With your change request successfully created, you're ready to proceed to Module 4, where you'll learn about CMDB management and how to query and update configuration items that might be affected by your changes.
-
-== Troubleshooting
-
-Common issues and solutions:
-
-* **Change not created**: Verify ServiceNow user has change management permissions
-* **Missing related records**: Ensure previous modules completed successfully
-* **Approval workflow issues**: Check change management configuration settings
-* **Field validation errors**: Review required vs. optional field settings
-
-For additional support, refer to your lab environment documentation or contact your instructor.
+<style type="text/css" rel="stylesheet">
+  .lightbox {
+    display: none;
+    position: fixed;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .lightbox:target {
+    display: flex;
+  }
+  .lightbox img {
+    /* max-height: 100% */
+    max-width: 60%;
+    max-height: 60%;
+  }
+  img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  h1 {
+    font-size: 18px;
+  }
+  h2 {
+    font-size: 16px;
+    font-weight: 600
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600
+  }
+  p span {
+    font-size: 14px;
+  }
+  ul li span {
+    font-size: 14px
+  }
+</style>

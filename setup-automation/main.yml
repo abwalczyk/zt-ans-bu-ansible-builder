@@ -19,9 +19,7 @@
       ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'BASTION_USER') }}"
       ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'BASTION_PASSWORD') }}"
       ansible_python_interpreter: /usr/libexec/platform-python
-    loop:
-      - node01
-      - node02
+    loop: []
 
 - name: Check host availability
   hosts: all:!localhost

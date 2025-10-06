@@ -1,149 +1,197 @@
-= Problem Management
-:toc:
-:toc-placement!:
+👋 Introduction
+===
+In this section we will create an execution environment using `ansible-builder`. You will notice that this section only has VSCode tab enabled, this is because we will not be using Automation Hub to pull collections for this challenge.
 
-Learn how to automate ServiceNow problem management by creating problems and linking them to existing incidents.
+*Note*: A quick note before we dive-in, the editor we are using is VSCode and it may be unfamiliar for some folks. But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge, if you are confused at any time there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any yaml errors.
 
-toc::[]
+For this challenge we are doing a basic execution environment and the collection will be pulled from the community galaxy(galaxy.ansible.com) which is the default hub to pull collections from. Our task for this challenge is to create an execution environment with the `ansible.netcommon` collection from Ansible galaxy on top of the minimal execution environment.
 
-[[introduction]]
-== Introduction
+In the next challenges we will show how to inform ansible-builder to pull collections from Automation Hub.
 
-In ServiceNow's ITIL implementation, a problem represents the underlying cause of one or more incidents. Problems are used to:
+Please go through the tasks in this challenges to understand how to interact with `ansible-builder` v3
 
-* Identify root causes of recurring incidents
-* Prevent future incidents through permanent fixes
-* Track workarounds and known errors
-* Maintain relationships between incidents and their underlying causes
+☑️ Task - The definition file
+===
 
-The root cause of a problem may not be known at creation time and often requires investigation through the problem management process.
+On the VSCode tab on the left side you will see that we have a directory opened called `minimal-downstream-from-galaxy` and this directory has a file called as `execution-environment.yml`.
 
-=== Understanding Problem-Incident Relationships
+This file is our execution environment definition file and the default name for this file is `execution-environment.yml`, by **default** we mean that if we just run the `build` subcommand of `ansible-builder` in this directory, ansible-builder will understand that it needs to look at this file for the definition of execution environment it needs to create.
 
-Problems and incidents have a many-to-one relationship:
+*Note* : For this task we have created an empty execution-environment.yml file for you, but in usual scenarios a user will have to create this directory as well as this file.
 
-* One problem can be associated with multiple incidents
-* Each incident can be linked to at most one problem
-* Problems help identify patterns and systemic issues
+You can also create any file name you want, but if you change the file name you will have to inform ansible-builder which file to pick definition from, information on this is available in the `ansible-builder build --help` command, Let's show an example of a different definition file name.
 
-=== Review the Playbook
+```
+  -f FILENAME, --file FILENAME
+The definition of the execution environment (default: execution-environment.yml)
+```
 
-A new playbook called `problem-attach.yml` has been added to your VS Code workspace.
+Suppose if we create the definition file name as `ee-definition.yml`, then we can run the following command to build execution environment.
 
-.Task: Inspect the problem creation playbook
+```
+ansible-builder build -f ee-definition.yml
+```
+
+Above command will not do anything and if you run this it will cause errors saying the `ee-definition.yml` is not found. For this lab, we will stick to the default name `execution-environment.yml` for the definition file.
+
+☑️ Task - Adding version to the definition file
+===
+As we mentioned that we are using ansible-builder version 3.0.0 for this lab, this also means that to take advantage of features provided with this version you need to add an identifier in the definition file. If you don't do this `ansible-builder` v3 will fail to understand the schema of the definition and some keys that are newly introduced resulting in failures.
+
+For this task, just add the following line to the execution-environment.yml
+
+```
+version: 3
+```
+
+
+☑️ Task - Adding the Base image
+===
+As we know that execution environments are container images acting as Ansible environments, an important aspect for the defintion file is to define a base image that builder will use to build an EE. Think of this step as the starting point for your execution environment and then we keeps on adding things on top.
+
+Add this to the `execution-environment.yml` after the version line
+
+```
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
+```
+
+Now you might be asking yourself, what image is this referring to - The Answer to that is this is minimal execution environment that is supplied with AAP2.4 which is the latest release of Ansible Automation Platform. Another image that comes with the platform is the supported execution environment which also has the Ansible supported collection baked on top of minimal execution environment.
+
+For the purpose of this lab as we are showing how to build an execution environment, we are starting from the minimal execution environment as the base image for our EE.
+
+☑️ Task - Adding the collection to EE
+===
+
+Next step is to add the collection that we want to take into our execution environment. For this challenge as we are adding `ansible.netcommon` collection from the default galaxy, we don't need to add an `ansible.cfg` to point to the Automation hub used in this lab. A simple collection definition for EE looks like this, and you can add this to the `execution-environment.yml` file after the `images` section
+
+```
+dependencies:
+  galaxy:
+    collections:
+      - ansible.netcommon
+```
+
+The above section specifies that we need to bake the `ansible.netcommon` collection in the execution environment. There are different dependencies you can specify for your execution-environment in this section like `python` and `system` dependencies based on your automation needs.
+
+One advantage of the builder v3 is you can specify the dependencies inline as compared to builder v1 where you can specify dependencies in a `requirements.yml` file. v3 gives you both of these options, either specify inline or specify requirements in a file. For a sample of a details definition file, check this [link](https://ansible.readthedocs.io/projects/builder/en/stable/definition/#execution-environment-definition)
+
+Task - Adding options to definition file
+===
+A mandatory bit that you need to add to your execution-environment definition if you are building on top of minimal or the supported EE is to add the package_manager_path.
+You need to do this because the downstream platform images are build on top of ubi-minimal image which has the default package manager as `microdnf` instead of `dnf`, if you are using builder to build images on top of *only* ubi, fedora or centos image, you will not to specify the package_manager_path in that case.
+
+But as we are building on top of the minimal image, Go ahead and add the following lines after the dependencies section:
+
+```
+options:
+  package_manager_path: /usr/bin/microdnf
+```
+
+Go ahead and save this file using `Ctrl + s` button or from the 'File > Save' option in the Menubar
+
+Task - Let's build our EE
+===
+This concludes building our definition file, now Let's go to the Terminal window and type the following command to build our EE
+
+```
+ansible-builder build -v 3
+```
+A bit about the command: We are not specifying the definition file name as we have used the default name and `-v 3` signifies the verbosity level of the output, you will see the build steps when you run this command and you can skip adding the `-v 3` as its totally optional.
+
+**NOTE** : `-v 3 ` has nothing to do with version 3, its just specifying the verbosity levels and its totally optional to the build process and not to be confused with `version: 3` in the definition file.
+
+This command will take a minute or two to complete.
+
+Task - Let's check what's built
+===
+
+Run the following command to check the image that was created
+
+```
+podman images
+```
+
+You will see that it builds an execution environment called `local/ansible-execution-env` by default, this is our execution environment built with the collection we need. You can also specify the name for your EE by adding a tag to the build command, an example below
+
+```
+ansible-builder build -t local/netcommon-ee
+```
+
+You can also tag the image post build if you want using the podman CLI using the following command
+```
+podman tag localhost/ansible-execution-env localhost/netcommon-ee
+```
+
+To verify if our EE is built correctly, you can run the following command to go inside the container image.
+```
+podman run -it localhost/ansible-execution-env bash
+```
+
+Once you are inside the EE, run the collection list command to check if the collection is present inside the EE
+```
+ansible-galaxy collection list
+```
+
+The output should show you `ansible.netcommon` collection. Use the same method for all the subsequent challenges to verify your EE.
+
+Hurray, you have now created a basic execution environment, In the next challenge we will look at how to pull collection from Automation hub
+
+✅ Next Challenge
+===
+Press the `Check` button below to go to the next challenge once you’ve completed the tasks.
+
+🐛 Encountered an issue?
 ====
-1. Open the VS Code tab in your lab environment
-2. Locate and open the `problem-attach.yml` file
-3. Review the playbook structure and logic
-4. Pay attention to how it queries for existing incidents
-====
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new).
 
-Key aspects to notice:
-
-* The playbook first queries for existing incident numbers you created
-* It uses the returned incident data in the problem creation task
-* The problem is automatically linked to the incident
-* Additional problem-specific fields are populated
-
-[[attach]]
-== Attach a Problem
-
-Execute the playbook to create a problem and associate it with your existing incident.
-
-.Procedure: Launch the problem attachment job
-====
-1. Navigate to the Automation Controller tab
-2. Go to *Automation Execution* > *Templates*
-3. Locate the `2 - Attach problem (problem-attach.yml)` job template
-4. Click the rocket icon (🚀) to execute the job
-====
-
-=== What Happens During Execution
-
-The playbook performs these operations:
-
-1. **Query Phase**: Searches for incidents created by your user account
-2. **Problem Creation**: Creates a new problem record in ServiceNow
-3. **Relationship Establishment**: Links the problem to the identified incident
-4. **Field Population**: Sets appropriate problem details and categorization
-
-Monitor the job output to see:
-
-* Which incident was found and selected
-* The problem number that was created
-* The relationship establishment between records
-
-[[inspect]]
-== Inspect Results
-
-Verify that the problem was created and properly linked to your incident.
-
-=== Verify Problem Creation
-
-.Procedure: Check the new problem
-====
-1. Access the ServiceNow tab using your lab credentials
-2. Select the "Favorites" tab and select "Problem - assigned to me"
-3. Select the appropriate problems view
-4. Locate your newly created problem
-
-====
-
-Look for:
-
-* A new problem number (e.g., PRB0012345)
-* Your username in the problem description or assignment
-* Proper categorization and priority settings
-* Timestamp matching your job execution
-
-=== Verify Incident Update
-
-.Procedure: Check incident-problem relationship
-====
-1. In ServiceNow, navigate to *Self-service - Incidents*
-2. Select your incident from Module 1
-3. Review the incident details for problem references
-4. Confirm the problem number appears in the related records
-====
-
-The incident should now show:
-
-* Updated status (if applicable)
-* Reference to the associated problem number
-* Modified timestamp reflecting the relationship update
-
-=== Expected Relationship
-
-[cols="2,3"]
-|===
-|Field |Expected Value
-
-|Incident Status |May be updated to "In Progress" or similar
-|Problem Reference |Should display the new problem number
-|Last Modified |Should reflect the time of problem attachment
-|Related Records |Problem should appear in related lists
-|===
-
-== Understanding the Automation
-
-This module demonstrates several important automation concepts:
-
-* **Data Querying**: How to search for existing records using Ansible
-* **Dynamic Relationships**: Creating links between different record types
-* **Workflow Integration**: Building upon previous automation steps
-* **ITIL Process Automation**: Implementing standard ITSM workflows
-
-== Next Steps
-
-With your problem successfully created and linked, you're ready to proceed to Module 3, where you'll learn about change management and how to create change requests for resolving problems.
-
-== Troubleshooting
-
-Common issues and solutions:
-
-* **No incidents found**: Ensure you completed Module 1 successfully
-* **Permission errors**: Verify your ServiceNow user has problem management permissions
-* **Relationship not visible**: Check if you're viewing the correct incident record
-* **Job execution fails**: Review the playbook syntax and authentication settings
-
-For additional assistance, consult your lab environment documentation.
+<style type="text/css" rel="stylesheet">
+  .lightbox {
+    display: none;
+    position: fixed;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .lightbox:target {
+    display: flex;
+  }
+  .lightbox img {
+    /* max-height: 100% */
+    max-width: 60%;
+    max-height: 60%;
+  }
+  img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  h1 {
+    font-size: 18px;
+  }
+  h2 {
+    font-size: 16px;
+    font-weight: 600
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600
+  }
+  p span {
+    font-size: 14px;
+  }
+  ul li span {
+    font-size: 14px
+  }
+</style>

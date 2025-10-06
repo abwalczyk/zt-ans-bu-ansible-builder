@@ -1,157 +1,49 @@
-#!/bin/bash
+RUNAS="sudo -u rhel"
 
-# Create a playbook for the user to execute which will create a SN incident
-tee /tmp/close-records-by-user.yml << EOF
----
-- name: close user created records 
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  vars:
-    demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
-    incident_list: []
-    problem_list: []
-    change_list: []
-    config_list: []
+#Runs bash with commands between '_' as nobody if possible
+$RUNAS bash<<_
 
-  tasks:
+rm /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
 
-  - name: find user created incidents
-    servicenow.itsm.incident_info:
-      query:
-        - sys_created_by: LIKE {{ demo_username }}
-          active: = true
-    register: incidents
+cat <<EOF >> /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
+[galaxy]
+server_list = validated_repo,rh_certified_repo
 
-  - name: find user created problems
-    servicenow.itsm.problem_info:
-      query:
-        - sys_created_by: LIKE {{ demo_username }}
-          active: = true
-    register: problems
+[galaxy_server.validated_repo]
+url=https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/content/validated/
 
-  - name: find user created change requests
-    servicenow.itsm.change_request_info:
-      query:
-        - sys_created_by: LIKE {{ demo_username }}
-          active: = true
-    register: changes
-
-  - name: find user created configuration items
-    servicenow.itsm.configuration_item_info:
-      query:
-        - sys_created_by: LIKE {{ demo_username }}
-          active: = true
-    register: configs
-
-  - name: query incident number and creation time 
-    set_fact:
-      incident_list: '{{ incident_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
-    loop: "{{ incidents.records }}"
-    when: incidents
-
-  - name: query problem number and creation time 
-    set_fact:
-      problem_list: '{{ problem_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
-    loop: "{{ problems.records }}"
-    when: problems
-
-  - name: query change request number and creation time 
-    set_fact:
-      change_list: '{{ change_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
-    loop: "{{ changes.records }}"
-    when: changes
-
-  - name: query configuration item sys_id and creation time 
-    set_fact:
-      config_list: '{{ config_list + [{"number": item.sys_id, "opened_at": item.sys_created_on}] }}'
-    loop: "{{ configs.records }}"
-    when: configs
-  
-  - name: close incidents from list
-    servicenow.itsm.incident:
-      state: closed
-      number: "{{ item.number }}"
-      close_code: "Solved (Permanently)"
-      close_notes: "Closed with ansible servicenow.itsm"
-      other:
-        active: false
-    with_items: "{{ incident_list }}"
-    when: 
-      - incident_list is defined
-
-  - name: close problems from list
-    servicenow.itsm.problem:
-      state: absent
-      assigned_to: "{{ demo_username }}"
-      number: "{{ item.number }}"
-      other:
-        active: false
-    with_items: "{{ problem_list }}"
-    when: 
-      - problem_list is defined
-    
-  - name: close change requests from list
-    servicenow.itsm.change_request:
-      state: closed
-      close_code: "successful"
-      close_notes: "Closed with ansible servicenow.itsm"
-      number: "{{ item.number }}"
-      other:
-        active: false
-    with_items: "{{ change_list }}"
-    when: 
-      - change_list is defined
-
-  - name: remove configuration items from list
-    servicenow.itsm.configuration_item:
-      state: absent
-      sys_id: "{{ item.number }}"
-    with_items: "{{ config_list }}"
-    when: 
-      - config_list is defined
-
+[galaxy_server.rh_certified_repo]
+url=https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/content/rh-certified/
 
 EOF
 
-# chown above file
-sudo chown rhel:rhel /tmp/close-records-by-user.yml
-
-# Write a new playbook to create a template from above playbook
-tee /tmp/template-create-module05.yml << EOF
+rm /home/rhel/minimal-downstream-with-hub-certs/solution-definition/execution-environment.yml
+cat > /home/rhel/minimal-downstream-with-hub-certs/solution-definition/execution-environment.yml << EOF
 ---
-- name: Create job template for problem-attach
-  hosts: localhost
-  connection: local
-  collections:
-    - ansible.controller
+version: 3
 
-  tasks:
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
 
-  - name: Post change-attach job template
-    job_template:
-      name: "5 - Query and close records by user (close-records-by-user.yml)"
-      job_type: "run"
-      organization: "Default"
-      inventory: "Demo Inventory"
-      project: "ServiceNow - admin"
-      playbook: "student_project/close-records-by-user.yml"
-      execution_environment: "ServiceNow EE"
-      credentials:
-        - "ServiceNow Credential"
-      state: "present"
-      ask_variables_on_launch: false
-      controller_host: "https://localhost"
-      controller_username: admin
-      controller_password: ansible123!
-      validate_certs: false
+dependencies:
+  galaxy:
+    collections:
+    - ansible.netcommon
+
+options:
+  package_manager_path: /usr/bin/microdnf
+
+additional_build_files:
+  - src: files
+    dest: configs
+
+additional_build_steps:
+  prepend_galaxy:
+    - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
+    - ARG ANSIBLE_GALAXY_SERVER_RH_CERTIFIED_REPO_TOKEN
+  prepend_base:
+    - COPY _build/configs/cert.pem /etc/pki/ca-trust/source/anchors/cert.pem
+    - RUN update-ca-trust
 
 EOF
-
-# chown above file
-sudo chown rhel:rhel /tmp/template-create-module05.yml
-
-# Execute above playbook
-# Run the playbook with the correct collections path environment variable and only existing paths
-ANSIBLE_COLLECTIONS_PATH="/root/.ansible/collections/ansible_collections/" \
-ansible-playbook -i /tmp/inventory /tmp/template-create-module05.yml

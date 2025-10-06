@@ -1,146 +1,101 @@
 #!/bin/bash
 
-# Create a playbook for the user to execute which will collect nodes information
-tee /tmp/collect-node-info.yml << EOF
+RUNAS="sudo -u rhel"
+
+#Runs bash with commands between '_' as nobody if possible
+$RUNAS bash<<_
+mkdir /home/rhel/minimal-downstream-with-hub-certs/
+mkdir /home/rhel/minimal-downstream-with-hub-certs/files/
+
+cat > /home/rhel/minimal-downstream-with-hub-certs/execution-environment.yml << EOF
 ---
-- name: get node facts for SNOW
-  hosts: nodes
-  vars:
-    node_info: []
+version: 3
 
-  tasks:
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
 
-  - name: Collect inventory facts
-    ansible.builtin.set_stats:
-      data:
-        node_info: "{{ node_info + [{'hostname': ansible_facts['nodename'], 'default_ip': ansible_facts['default_ipv4']['address'], 'default_mac': ansible_facts['default_ipv4']['macaddress'], 'vendor': ansible_facts['product_name'] }] }}"
+dependencies:
+  galaxy:
+    collections:
+    - ansible.netcommon
+
+options:
+  package_manager_path: /usr/bin/microdnf
+
+additional_build_files:
+  - src: files
+    dest: configs
+
+additional_build_steps:
+  prepend_galaxy:
+    - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
+
+build_arg_defaults:
+  ANSIBLE_GALAXY_CLI_COLLECTION_OPTS: '--ignore-certs'
 
 EOF
 
-# chown above file
-sudo chown rhel:rhel /tmp/collect-node-info.yml
-
-# Create a playbook for the user to execute which will create/update CIs
-tee /tmp/create-update-config-items.yml << EOF
+mkdir /home/rhel/minimal-downstream-with-hub-certs/solution-definition/
+cat > /home/rhel/minimal-downstream-with-hub-certs/solution-definition/execution-environment.yml << EOF
 ---
-- name: Automate SNOW 
-  hosts: localhost
-  connection: local
-  collections:
-    - servicenow.itsm
-  vars:
-    demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
+version: 3
 
-  tasks:
-  - name: Create/update configuration item
-    servicenow.itsm.configuration_item:
-      name: "{{ item.hostname }}-{{ demo_username }}"
-      assigned_to: "{{ demo_username }}"
-      ip_address: "{{ item.default_ip }}"
-      mac_address: "{{ item.default_mac }}"
-      environment: test
-      other:
-        sys_class_name: cmdb_ci_linux_server
-    loop: "{{ node_info }}"
-    register: configuration_item
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
 
-  - name: debug
-    debug:
-      msg: "{{ configuration_item }}"
+dependencies:
+  galaxy:
+    collections:
+    - ansible.netcommon
+
+options:
+  package_manager_path: /usr/bin/microdnf
+
+additional_build_files:
+  - src: files
+    dest: configs
+
+additional_build_steps:
+  prepend_galaxy:
+    - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
+  prepend_base:
+    - COPY _build/configs/cert.pem /etc/pki/ca-trust/source/anchors/cert.pem
+    - RUN update-ca-trust
 
 EOF
 
-# chown above file
-sudo chown rhel:rhel /tmp/create-update-config-items.yml
+token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST https://privatehub-01/api/galaxy/v3/auth/token/ -k | jq .token`
 
-# Write a new playbook to create a template from above playbook
-tee /tmp/template-create-module04.yml << EOF
----
-- name: Create job template for collect node info
-  hosts: localhost
-  connection: local
-  collections:
-    - ansible.controller
+cat <<EOF >> /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
+[galaxy]
+server_list = validated_repo,rh_certified_repo
 
-  tasks:
-  - name: Post collect-nodes job template
-    job_template:
-      name: "4.1 - Collect node information (collect-node-info.yml)"
-      job_type: "run"
-      organization: "Default"
-      inventory: "rhel inventory"
-      project: "ServiceNow - admin"
-      playbook: "student_project/collect-node-info.yml"
-      execution_environment: "ServiceNow EE"
-      credentials:
-        - "rhel credential"
-      state: "present"
-      ask_variables_on_launch: false
-      use_fact_cache: true
-      controller_host: "https://localhost"
-      controller_username: admin
-      controller_password: ansible123!
-      validate_certs: false
+[galaxy_server.validated_repo]
+url=https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/content/validated/
+token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST https://privatehub-01/api/galaxy/v3/auth/token/ -k | jq .token | xargs`
 
-  - name: Post create/update cmdb job template
-    job_template:
-      name: "4.2 - Create/update configuration items (create-update-config-items.yml)"
-      job_type: "run"
-      organization: "Default"
-      inventory: "Demo Inventory"
-      project: "ServiceNow - admin"
-      playbook: "student_project/create-update-config-items.yml"
-      execution_environment: "ServiceNow EE"
-      credentials:
-        - "ServiceNow Credential"
-      state: "present"
-      ask_variables_on_launch: false
-      controller_host: "https://localhost"
-      controller_username: admin
-      controller_password: ansible123!
-      validate_certs: false
-
-  - name: Create a workflow job template with schema in template
-    ansible.controller.workflow_job_template:
-      name: "4.0 - Query node info and update CMDB (multiple job templates)"
-      inventory: Demo Inventory
-      controller_host: "https://localhost"
-      controller_username: admin
-      controller_password: ansible123!
-      validate_certs: false
-      schema:
-        - identifier: query-inventory
-          unified_job_template:
-            organization:
-              name: Default
-            name: "4.1 - Collect node information (collect-node-info.yml)"
-            type: job_template
-          credentials: []
-          related:
-            success_nodes:
-              - identifier: update-cmdb
-            failure_nodes: []
-            always_nodes: []
-            credentials: []
-        - identifier: update-cmdb
-          unified_job_template:
-            organization:
-              name: Default
-            name: "4.2 - Create/update configuration items (create-update-config-items.yml)"
-            type: job_template
-          credentials: []
-          related:
-            success_nodes: []
-            failure_nodes: []
-            always_nodes: []
-            credentials: []
-    register: result
+[galaxy_server.rh_certified_repo]
+url=https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/content/rh-certified/
+token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST https://privatehub-01/api/galaxy/v3/auth/token/ -k | jq .token | xargs`
 
 EOF
+curl https://letsencrypt.org/certs/lets-encrypt-r3.pem --output /home/rhel/minimal-downstream-with-hub-certs/files/cert.pem
 
-# chown above file
-sudo chown rhel:rhel /tmp/template-create-module04.yml
+touch /etc/sudoers.d/rhel_sudoers
+echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
+cp -a /root/.ssh/* /home/rhel/.ssh/.
+chown -R rhel:rhel /home/rhel/.ssh
+#dnf config-manager --enable rhui*
 
-# Run the playbook with the correct collections path environment variable and only existing paths
-ANSIBLE_COLLECTIONS_PATH="/root/.ansible/collections/ansible_collections/" \
-ansible-playbook -i /tmp/inventory /tmp/template-create-module04.yml
+sudo systemctl stop pulpcore-api
+sudo systemctl stop nginx
+sudo systemctl start snapd
+sudo certbot certonly --no-bootstrap --standalone -d privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io --email ansible-network@redhat.com --noninteractive --agree-tos
+sudo cp /etc/letsencrypt/live/privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/privkey.pem /etc/pulp/certs/pulp_webserver.key
+sudo cp /etc/letsencrypt/live/privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/fullchain.pem /etc/pulp/certs/pulp_webserver.crt
+sudo restorecon -v /etc/pulp/certs/pulp_webserver.crt
+sudo restorecon -v /etc/pulp/certs/pulp_webserver.key
+sudo systemctl start pulpcore-api
+sudo systemctl start nginx

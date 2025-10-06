@@ -1,98 +1,75 @@
 #!/bin/bash
 
-# Create a playbook for the user to execute which will create a SN incident
-tee /tmp/change-attach.yml << EOF
+RUNAS="sudo -u rhel"
+
+#Runs bash with commands between '_' as nobody if possible
+$RUNAS bash<<_
+mkdir /home/rhel/minimal-downstream-with-hub/
+mkdir /home/rhel/minimal-downstream-with-hub/files/
+
+cat > /home/rhel/minimal-downstream-with-hub/execution-environment.yml << EOF
 ---
-- name: Automate SNOW 
-  hosts: localhost
-  connection: local
-  collections:
-    - servicenow.itsm
-    
-  vars:
-    demo_username: "{{ lookup('env', 'SN_USERNAME') }}"
-    problem_list: []
+version: 3
 
-  tasks:
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
 
-  - name: find user created problems
-    servicenow.itsm.problem_info:
-      query:
-        - sys_created_by: LIKE {{ demo_username }}
-          active: = true
-    register: problems
+dependencies:
+  galaxy:
+    collections:
+    - ansible.netcommon
 
-  - name: query problem number and creation time 
-    set_fact:
-      problem_list: '{{ problem_list + [{"number": item.number, "opened_at": item.opened_at}] }}'
-    loop: "{{ problems.records }}"
-    when: problems
+options:
+  package_manager_path: /usr/bin/microdnf
+EOF
 
-  - name: Assign problem for assessment
-    servicenow.itsm.problem:
-      number: "{{ item.number }}"
-      state: "Pending Change"
-      assigned_to: "{{ demo_username }}"
-    loop: "{{ problem_list }}"
+mkdir /home/rhel/minimal-downstream-with-hub/solution-definition/
+cat > /home/rhel/minimal-downstream-with-hub/solution-definition/execution-environment.yml << EOF
+---
+version: 3
 
-  - name: Create change request for resolving a problem
-    servicenow.itsm.change_request:
-      state: new
-      type: standard
-      short_description: "Reboot the webserver"
-      description: "Just power off the entire rack to be sure"
-      on_hold: true
-      hold_reason: "Wait until after board meeting!"
-      other:
-        parent: "{{ item.number }}"
-    loop: "{{ problem_list }}"
-    register: change
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
 
-  # - debug:
-  #     msg: "A new change request has been created {{ change.record.number }}"
+dependencies:
+  galaxy:
+    collections:
+    - ansible.netcommon
+
+options:
+  package_manager_path: /usr/bin/microdnf
+
+additional_build_files:
+  - src: files
+    dest: configs
+
+additional_build_steps:
+  prepend_galaxy:
+    - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
+
+build_arg_defaults:
+  ANSIBLE_GALAXY_CLI_COLLECTION_OPTS: '--ignore-certs'
 
 EOF
 
-# chown above file
-chown rhel:rhel /tmp/change-attach.yml
+token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST https://privatehub-01/api/galaxy/v3/auth/token/ -k | jq .token`
 
-# Write a new playbook to create a template from above playbook
-tee /tmp/template-create-problem-attach.yml << EOF
----
-- name: Create job template for problem-attach
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  collections:
-    - ansible.controller
+cat <<EOF >> /home/rhel/minimal-downstream-with-hub/files/ansible.cfg
+[galaxy]
+server_list = validated_repo,rh_certified_repo
 
-  tasks:
+[galaxy_server.validated_repo]
+url=https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/content/validated/
+token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST https://privatehub-01/api/galaxy/v3/auth/token/ -k | jq .token | xargs`
 
-  - name: Post change-attach job template
-    job_template:
-      name: "3 - Attach change request (change-attach.yml)"
-      job_type: "run"
-      organization: "Default"
-      inventory: "Demo Inventory"
-      project: "ServiceNow - admin"
-      playbook: "student_project/change-attach.yml"
-      execution_environment: "ServiceNow EE"
-      credentials:
-        - "ServiceNow Credential"
-      state: "present"
-      # ask_variables_on_launch: true
-      # extra_vars:
-      #   problem_number: changeMe
-      controller_host: "https://localhost"
-      controller_username: admin
-      controller_password: ansible123!
-      validate_certs: false
+[galaxy_server.rh_certified_repo]
+url=https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/content/rh-certified/
+token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST https://privatehub-01/api/galaxy/v3/auth/token/ -k | jq .token | xargs`
 
 EOF
+_
 
-# chown above file
-chown rhel:rhel /tmp/template-create-problem-attach.yml
-
-# Execute above playbook
-ANSIBLE_COLLECTIONS_PATH="/root/.ansible/collections/ansible_collections/" \
-ansible-playbook -i /tmp/inventory /tmp/template-create-problem-attach.yml
+#curl https://letsencrypt.org/certs/lets-encrypt-r3.pem --output /etc/pki/ca-trust/source/anchors/cert.pem
+#update-ca-trust

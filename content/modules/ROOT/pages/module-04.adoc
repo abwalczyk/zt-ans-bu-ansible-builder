@@ -1,200 +1,187 @@
-= CMDB Management
-:toc:
-:toc-placement!:
+👋 Introduction
+===
+In this section we will create an execution environment using `ansible-builder`.
 
-Learn how to automate ServiceNow Configuration Management Database (CMDB) operations using Ansible to query and update configuration items.
+For this challenge we are going to fix the SSL errors that we faced in last challenge properly instead of just ignoring the cert errors.
 
-toc::[]
+*Note*: A quick note before we dive-in, the editor we are is VSCode and it maybe unfamiliar for some folks. But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge, if you are confused at any time there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any yaml errors.
 
-[[introduction]]
-== Introduction
+Please go through the tasks in this challenges to understand how to interact with `ansible-builder` v3
 
-In ITIL, a Configuration Management Database (CMDB) is a centralized repository that organizations use to track hardware and software assets throughout their lifecycle. The ServiceNow CMDB serves as the single source of truth for IT asset management, providing:
+☑️ Task - Definition file from last challenge
+===
 
-* **Asset Tracking**: Complete inventory of IT infrastructure components
-* **Relationship Mapping**: Dependencies and connections between configuration items
-* **Change Impact Analysis**: Understanding how changes affect related systems
-* **Service Mapping**: Linking business services to underlying infrastructure
+On the VSCode tab on the left side you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called as `execution-environment.yml`.
 
-=== Configuration Items (CIs)
+This file is the same as the one we created from the last challenge when we pulled the collection from Automation hub. This will be starting point for this challenge and we will fix the SSL error from last challenge, without using a workaround.
 
-Configuration Items represent individual components in your IT infrastructure:
+For this task, just verify the content of the definition file to ensure that it matches with what we learned in last challenge.
 
-* **Hardware**: Servers, network devices, storage systems
-* **Software**: Applications, operating systems, databases
-* **Services**: Business services, technical services
-* **Documentation**: Procedures, policies, service level agreements
+☑️ Task - Intermideate certificate file.
+===
+We have created an `cert.pem` file that is the intermideate certificate needed to do SSL verification. It is placed in the `files` directory adjacent to the `execution-environment.yml` file
+![image.png](https://play.instruqt.com/assets/tracks/w3polihv5eqs/5369663ef7c20d5028f7b38a2605259f/assets/image.png)
 
-=== CMDB Automation Benefits
+Our challenge is to inform `ansible-builder` about this file and add this file to the correct location in the execution environment. This way builder will be able to download the collections without the SSL Verification errors.
 
-Using Ansible to automate CMDB operations provides:
+☑️ Task - Remove the workaround from the last challenge.
+===
+Firstly, we will remove the workaround that we added to ignore certificates from our definition file.
+Go ahead and remove the following lines from the `execution-environment.yml` file.
+```
+build_arg_defaults:
+  ANSIBLE_GALAXY_CLI_COLLECTION_OPTS: '--ignore-certs'
+```
 
-* **Accuracy**: Automated data collection reduces manual entry errors
-* **Consistency**: Standardized data formats and update procedures
-* **Timeliness**: Real-time updates as infrastructure changes
-* **Integration**: Seamless connection with existing automation workflows
+Once removed you can either try to replicate the error again or just move ahead to the next task. To replicate, just run the following command in the terminal
 
-=== Lab Environment Setup
+```
+ansible-builder build -v 3
+```
 
-For this module, two Red Hat Enterprise Linux (RHEL) servers have been automatically provisioned:
+☑️ Task - Add the certificate to our definition file.
+===
+Our task is to add the `cert.pem` file to our execution environment, to do so we want to create a section like the `prepend_galaxy` section in our definition file.
+This section is called `prepend_base` and it is another stage in our execution environment creation, as this is a certificate addition we want to do this at an initial stage and `base` is the exact right spot to do so.
 
-* **node1**: Primary test server
-* **node2**: Secondary test server
+Do the following changes in your `execution-environment.yml` below the `prepend_galaxy` section
 
-These servers have been added to the Automation Controller inventory and are ready for CMDB integration.
+```
+prepend_base:
+  - COPY _build/configs/cert.pem /etc/pki/ca-trust/source/anchors/
+  - RUN update-ca-trust
+```
 
-=== Review the Playbooks
+This section is part of the `additional_build_steps` section in definition file, after the addition your section should look like this
 
-Two specialized playbooks have been created in your VS Code workspace:
+```
+additional_build_steps:
+  prepend_galaxy:
+    - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
+  prepend_base:
+    - COPY _build/configs/cert.pem /etc/pki/ca-trust/source/anchors/
+    - RUN update-ca-trust
+```
 
-* **`collect-node-info.yml`**: Gathers detailed information about the RHEL nodes
-* **`create-update-config-items.yml`**: Creates or updates configuration items in the CMDB
+**NOTE** You must be wondering if this is the initial stage why are we adding this below the `prepend_galaxy` stage? You can do this because the definition schema is a yaml dictionary, because of that the name matters instead of the position. You can try changing the position of these section and check the behavior of ansible-builder.
 
-.Task: Examine the CMDB playbooks
+☑️ Task - Let's try our fix
+===
+Now that you have added the fix for the certificate, let's try rebuilding our execution environment.
+Run the following command
+
+```
+ansible-builder build -v 3
+```
+
+Hopefully, if you have done everything correctly you should have your new execution environment.
+
+☑️ Task - Let's check what's built
+===
+
+Run the following command to check the image that was created
+
+```
+podman images
+```
+
+You will see that it builds an execution environment called `localhost/ansible-execution-env` by default, this is our execution environment built with the collection we need from hub with the certificate fix.
+You can tag the image post build if you want using the podman CLI using the following command, please run this command.
+```
+podman tag localhost/ansible-execution-env localhost/netcommon-hub-cert-ee
+```
+Hurray, you have now created an execution environment with a collection from automation hub by fixing the certificate error.
+
+☑️ Task - Let's push this EE to Automation Hub
+===
+Automation hub also acts as a registry to store your custom execution environments. To push this execution environment to Automation hub, you need to first tag the EE with a new name and address of the automation hub, please run the following commands.
+
+Login to automation hub with podman
+```
+podman login privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io --tls-verify=false
+```
+
+> Username: `admin`
+>
+> Password: `ansible123!`
+
+Tag your local image
+
+```
+podman tag localhost/ansible-execution-env privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/netcommon-hub-cert-ee
+```
+
+Push image to Automation hub
+
+```
+podman push privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/netcommon-hub-cert-ee --tls-verify=false
+```
+
+Let's verify if the image is pushed to Automation Hub,
+- Go to Automation Hub tab
+- Login using the below credentials
+> Username: `admin`
+>
+> Password: `ansible123!`
+
+- Go to the "Execution Environments" section on the left hand side and you should see the recent execution environment pushed to Automation Hub.
+
+In the next challenge, we will try to pull the collection without the token inside the ansible.cfg file.
+
+✅ Next Challenge
+===
+Press the `Check` button below to go to the next challenge once you’ve completed the tasks.
+
+🐛 Encountered an issue?
 ====
-1. Open the VS Code tab in your lab environment
-2. Review `collect-node-info.yml` to understand data collection methods
-3. Examine `create-update-config-items.yml` to see how CI updates work
-4. Note the data mapping between Ansible facts and ServiceNow fields
-====
+If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new).
 
-=== Current CMDB State
-
-Before running the automation, examine the current state of Linux configuration items:
-
-.Procedure: View existing Linux CIs
-====
-1. Access the ServiceNow tab
-2. In the filter navigator, type "Linux"
-3. Navigate to *Configuration* → *Servers* → *Linux*
-4. Review the current list of Linux server configuration items
-
-====
-
-Note the current number of Linux servers and their details - you'll compare this after running the automation.
-
-[[query]]
-== Query Nodes and Update CMDB
-
-Execute the workflow to collect node information and update the ServiceNow CMDB with configuration items.
-
-=== Workflow Job Template
-
-The CMDB automation has been implemented as a Workflow Job Template that combines multiple operations:
-
-.Procedure: Execute the CMDB workflow
-====
-1. Navigate to the Automation Controller tab
-2. Go to *Automation Execution* → *Templates*
-3. Locate the `4.0 - Query node info and update CMDB (multiple job templates)` workflow
-4. Click the rocket icon (🚀) to launch the workflow
-====
-
-=== Workflow Visualization
-
-The Workflow Job Template includes a visualization feature:
-
-* **Workflow Map**: Visual representation of job dependencies and flow
-* **Real-time Status**: Live updates showing job progress
-* **Interactive Nodes**: Click on workflow nodes to view individual job details
-* **Parallel Execution**: Multiple jobs running simultaneously for efficiency
-
-.Task: Monitor workflow execution
-====
-1. After launching the workflow, look for the visualization button
-2. Click the visualization icon to open the workflow map
-3. Observe the job nodes and their execution status
-4. Click on individual nodes to view job details and output
-5. Monitor the overall workflow progress
-====
-
-=== Workflow Components
-
-The workflow typically includes these phases:
-
-1. **Discovery Phase**: Collect system information from target nodes
-2. **Data Processing**: Transform collected data into ServiceNow format
-3. **CMDB Update**: Create or update configuration items
-4. **Relationship Mapping**: Establish connections between CIs
-5. **Validation**: Verify successful CMDB updates
-
-[[inspect]]
-== Inspect Results
-
-Verify that the configuration items were successfully created or updated in the ServiceNow CMDB.
-
-=== Verify CMDB Updates
-
-.Procedure: Check updated Linux configuration items
-====
-1. Return to the ServiceNow tab
-2. In the filter navigator, type "Linux"
-3. Navigate to *Configuration* → *Servers* → *Linux*
-4. Review the updated list of Linux server configuration items
-5. Compare with the initial state you observed earlier
-====
-
-=== Expected Results
-
-You should observe the following changes:
-
-* **New Configuration Items**: Two new Linux server CIs (node1 and node2)
-* **IP Address Population**: Network information automatically populated
-* **System Details**: Hardware and software specifications included
-* **Timestamps**: Creation or update times reflecting the automation execution
-
-=== Configuration Item Details
-
-Click on each new configuration item to examine the populated fields:
-
-[cols="2,3"]
-|===
-|Field Category |Expected Information
-
-|Basic Information |Hostname, FQDN, operating system
-|Network Details |IP addresses, MAC addresses, network interfaces
-|Hardware Specs |CPU count, memory, disk space
-|Software Info |Operating system version, installed packages
-|Discovery Data |Last discovered date, discovery source
-|===
-
-=== Data Accuracy Validation
-
-Verify that the automated data collection captured accurate information:
-
-* **IP Addresses**: Should match the actual node network configuration
-* **System Specifications**: CPU, memory, and disk information should be current
-* **OS Details**: Operating system version and architecture should be correct
-* **Hostnames**: Should correspond to the actual server names (node1, node2)
-
-== Understanding CMDB Automation
-
-This module demonstrates several key concepts:
-
-* **Automated Discovery**: How Ansible can collect system information
-* **Data Transformation**: Converting system facts to ServiceNow format
-* **CMDB Integration**: Programmatic creation and updating of CIs
-* **Workflow Orchestration**: Coordinating multiple automation tasks
-
-=== Benefits Realized
-
-* **Reduced Manual Effort**: Eliminates manual data entry for new systems
-* **Improved Accuracy**: Automated collection reduces human errors
-* **Consistent Updates**: Standardized data format and update procedures
-* **Real-time Synchronization**: CMDB stays current with infrastructure changes
-
-== Next Steps
-
-With your CMDB successfully updated with new configuration items, you're ready to proceed to Module 5, where you'll learn about automated record cleanup and maintenance tasks.
-
-== Troubleshooting
-
-Common issues and solutions:
-
-* **CIs not created**: Verify node connectivity and ServiceNow permissions
-* **Missing IP addresses**: Check network configuration and discovery settings
-* **Duplicate entries**: Review CI identification and matching logic
-* **Permission errors**: Ensure ServiceNow user has CMDB write permissions
-* **Workflow failures**: Check individual job logs for specific error messages
-
-For additional assistance, consult your lab environment documentation or contact your instructor.
+<style type="text/css" rel="stylesheet">
+  .lightbox {
+    display: none;
+    position: fixed;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .lightbox:target {
+    display: flex;
+  }
+  .lightbox img {
+    /* max-height: 100% */
+    max-width: 60%;
+    max-height: 60%;
+  }
+  img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  h1 {
+    font-size: 18px;
+  }
+  h2 {
+    font-size: 16px;
+    font-weight: 600
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600
+  }
+  p span {
+    font-size: 14px;
+  }
+  ul li span {
+    font-size: 14px
+  }
+</style>

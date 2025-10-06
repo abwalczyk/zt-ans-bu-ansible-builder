@@ -5,23 +5,21 @@ antora:
   dir: www
   modules:
     - name: module-01
-      label: "Incident creation"
+      label: "Itroduction to ansible-builder"
       solveButton: false
     - name: module-02
-      label: "Attaching a problem"
+      label: "Let's create a basic execution environment"
       solveButton: false
     - name: module-03
-      label: "Root cause, fix and close"
+      label: "Let's create an execution environment with collection from automation hub"
       solveButton: false
     - name: module-04
-      label: "Query and update ServiceNow"
+      label: "Fix the SSL errors while building execution environment"
       solveButton: false
     - name: module-05
-      label: "Query and update records"
+      label: "Remove token from ansible.cfg file and build EE again"
       solveButton: false
-    - name: module-06
-      label: "Use ServiceNow as an inventory"
-      solveButton: false
+
 
 tabs:
   - name: AAP
@@ -30,6 +28,3 @@ tabs:
   - name: "VS Code"
     url: https://code-server-${guid}.${domain}/
     external: false
-  - name: ServiceNow
-    url: https://ansible.service-now.com
-    external: true
