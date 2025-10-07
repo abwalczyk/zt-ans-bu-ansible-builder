@@ -3,17 +3,22 @@ containers:
   - name: code-server
     image: codercom/code-server:latest
     securityContext:
-      runAsUser: 0   # run as root
+      runAsUser: 0   # run as root to modify the coder user
     command:
       - /bin/bash
       - -c
       - |
+        # Change coder's shell to bash so VS Code terminals work
         usermod -s /bin/bash coder
-        su coder -c "code-server --auth none \
-          --user-data-dir /home/coder/.local/share/code-server \
-          --extensions-dir /home/coder/.local/share/code-server/extensions \
-          --bind-addr 0.0.0.0:8080 \
-          /home/coder/project"
+
+        # Switch back to coder and launch code-server
+        su - coder -c "
+          code-server --auth none \
+            --user-data-dir /home/coder/.local/share/code-server \
+            --extensions-dir /home/coder/.local/share/code-server/extensions \
+            --bind-addr 0.0.0.0:8080 \
+            /home/coder/project
+        "
     ports:
       - name: code-server
         containerPort: 8080
