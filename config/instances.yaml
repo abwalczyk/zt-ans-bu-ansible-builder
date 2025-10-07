@@ -37,7 +37,7 @@ containers:
       - rm -rf /tmp/repo
 virtualmachines:
   - name: "control"
-    image: "base-zero-aap-2.5-container-che"
+    image: "base-zero-aap-2.5-container-ceh"
     memory: "16G"
     cores: 4
     image_size: "30Gi"
