@@ -2,19 +2,19 @@
 containers:
   - name: code-server
     image: codercom/code-server:latest
-      command:
-        - /bin/bash
-        - -c
-        - |
-          # Change coder's shell to bash so VS Code can launch terminals
-          usermod -s /bin/bash coder
+    command:
+      - /bin/bash
+      - -c
+      - |
+        # Change coder's shell to bash so VS Code can launch terminals
+        usermod -s /bin/bash coder
 
         # Start code-server as before
-          code-server --auth none \
-            --user-data-dir /home/coder/.local/share/code-server \
-            --extensions-dir /home/coder/.local/share/code-server/extensions \
-            --bind-addr 0.0.0.0:8080 \
-            /home/coder/project
+        code-server --auth none \
+          --user-data-dir /home/coder/.local/share/code-server \
+          --extensions-dir /home/coder/.local/share/code-server/extensions \
+          --bind-addr 0.0.0.0:8080 \
+          /home/coder/project
     ports:
       - name: code-server
         containerPort: 8080
