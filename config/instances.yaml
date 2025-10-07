@@ -1,19 +1,20 @@
----
 containers:
   - name: code-server
     image: codercom/code-server:latest
     securityContext:
-      runAsUser: 0
+      runAsUser: 1000        # coder's UID in the image
+      runAsGroup: 1000
+      allowPrivilegeEscalation: false
     command:
       - /bin/bash
       - -c
       - |
-        usermod -s /bin/bash coder
-        su - coder -c 'code-server --auth none \
+        # start code-server in coder's home directory
+        exec code-server --auth none \
           --user-data-dir /home/coder/.local/share/code-server \
           --extensions-dir /home/coder/.local/share/code-server/extensions \
           --bind-addr 0.0.0.0:8080 \
-          /home/coder/project'
+          /home/coder
     ports:
       - name: code-server
         containerPort: 8080
@@ -41,11 +42,6 @@ containers:
         targetPort: 8080
         tls: true
         tls_termination: Edge
-    commands:
-      - git clone https://github.com/cloin/instruqt-snow /tmp/repo
-      - cp -r /tmp/repo/student_project /home/coder/project
-      - rm -rf /tmp/repo
-
 virtualmachines:
   - name: "control"
     image: "base-zero-aap-2.5-container-ceh"
