@@ -27,4 +27,4 @@ tabs:
     external: false
   - name: VS Ccode
     url: https://vscode-${guid}.${domain}
-    external: true
+    external: false
