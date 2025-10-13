@@ -25,6 +25,6 @@ tabs:
   - name: AAP
     url: https://control-${guid}.${domain}/
     external: false
-  - name: VS Ccode
+  - name: VS Code
     url: https://vscode-${guid}.${domain}
     external: false
