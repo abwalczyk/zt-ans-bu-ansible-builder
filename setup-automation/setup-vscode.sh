@@ -27,7 +27,7 @@ cert: false
 EOF
 
 systemctl start code-server || true
-dnf install -y unzip nano git podman ansible-core python3-pip || true
+dnf install -y unzip nano git podman ansible-core python3-pip jq ansible-builder || true
 
 # Ensure ansible-galaxy exists; if not, install ansible-core via pip
 if ! command -v ansible-galaxy >/dev/null 2>&1; then
