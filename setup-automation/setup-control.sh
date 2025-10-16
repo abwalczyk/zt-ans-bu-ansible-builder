@@ -1,10 +1,6 @@
 #!/bin/bash
 set -e
 
-touch /etc/sudoers.d/rhel_sudoers
-echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
-cp -a /root/.ssh/* /home/rhel/.ssh/.
-chown -R rhel:rhel /home/rhel/.ssh
 
 # Enable standard RHEL repos if available
 sudo dnf config-manager --set-enabled rhel-9-baseos-rpms rhel-9-appstream-rpms || true
