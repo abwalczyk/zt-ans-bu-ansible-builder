@@ -1,11 +1,16 @@
-RUNAS="sudo -u rhel"
+#!/bin/bash
+set -e
 
-#Runs bash with commands between '_' as nobody if possible
-$RUNAS bash<<_
+# Ensure rhel user exists
+id rhel >/dev/null 2>&1 || useradd -m rhel
+
+# Run commands as rhel
+sudo -u rhel bash <<'EOF_RHEL'
+mkdir -p /home/rhel/minimal-downstream-with-galaxy/solution-definition/
 mkdir /home/rhel/minimal-downstream-with-galaxy/
 touch /home/rhel/minimal-downstream-with-galaxy/execution-environment.yml
-mkdir /home/rhel/minimal-downstream-with-galaxy/solution-definition/
-cat > /home/rhel/minimal-downstream-with-galaxy/solution-definition/execution-environment.yml << EOF
+
+cat > /home/rhel/minimal-downstream-with-galaxy/solution-definition/execution-environment.yml <<'YAML'
 ---
 version: 3
 
@@ -20,10 +25,8 @@ dependencies:
 
 options:
   package_manager_path: /usr/bin/microdnf
-EOF
+YAML
+EOF_RHEL
 
-
+# Enable lingering as root (must be outside the sudo block)
 loginctl enable-linger rhel
-
-_
-#cat <<< $(jq '."[yaml]"."editor.autoIndent" = true' /home/rhel/.local/share/code-server/User/settings.json) > /home/rhel/.local/share/code-server/User/settings.json
