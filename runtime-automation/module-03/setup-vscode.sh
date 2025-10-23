@@ -16,7 +16,7 @@ images:
 dependencies:
   galaxy:
     collections:
-    - ansible.netcommon
+      - ansible.netcommon
 
 options:
   package_manager_path: /usr/bin/microdnf
