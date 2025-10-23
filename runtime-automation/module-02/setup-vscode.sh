@@ -16,15 +16,16 @@ version: 3
 
 images:
   base_image:
-    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
+    name: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel8:latest
 
 dependencies:
   galaxy:
     collections:
-    - ansible.netcommon
+      - ansible.netcommon
 
 options:
   package_manager_path: /usr/bin/microdnf
+
 YAML
 EOF_RHEL
 
