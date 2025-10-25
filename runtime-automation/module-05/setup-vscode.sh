@@ -10,10 +10,10 @@ cat <<EOF >> /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
 server_list = validated_repo,rh_certified_repo
 
 [galaxy_server.validated_repo]
-url=https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/content/validated/
+url=https://privatehub-01.${GUID}.instruqt.io/api/galaxy/content/validated/
 
 [galaxy_server.rh_certified_repo]
-url=https://privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/api/galaxy/content/rh-certified/
+url=https://privatehub-01.${GUID}.instruqt.io/api/galaxy/content/rh-certified/
 
 EOF
 
@@ -47,3 +47,4 @@ additional_build_steps:
     - RUN update-ca-trust
 
 EOF
+_
