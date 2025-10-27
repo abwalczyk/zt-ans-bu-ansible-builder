@@ -72,4 +72,7 @@ token=${token}
 [galaxy_server.rh_certified_repo]
 url=https://control-${GUID}.apps.ocpvdev01.rhdp.net/api/galaxy/content/rh-certified/
 token=${token}
+EOF
+
 EOF_RHEL
+
