@@ -3,6 +3,9 @@ curl -k  -L https://${SATELLITE_URL}/pub/katello-server-ca.crt -o /etc/pki/ca-tr
 update-ca-trust
 rpm -Uhv https://${SATELLITE_URL}/pub/katello-ca-consumer-latest.noarch.rpm || true
 
+echo ${DOMAIN}
+echo ${GUID}
+
 subscription-manager status >/dev/null 2>&1 || \
   subscription-manager register --org=${SATELLITE_ORG} --activationkey=${SATELLITE_ACTIVATIONKEY} --force
 setenforce 0
