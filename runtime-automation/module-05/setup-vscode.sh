@@ -1,8 +1,13 @@
-RUNAS="sudo -u rhel"
+#!/bin/bash
+set -e
 
-#Runs bash with commands between '_' as nobody if possible
-$RUNAS bash<<_
+# Ensure rhel user exists
+id rhel >/dev/null 2>&1 || useradd -m rhel
 
+# Run commands as rhel
+# Run commands as rhel
+sudo -u rhel bash <<'EOF_RHEL'
+source /etc/profile.d/domain_guid.sh
 rm /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
 
 cat <<EOF >> /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
