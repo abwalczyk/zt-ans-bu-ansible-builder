@@ -7,9 +7,9 @@ chown -R rhel:rhel /home/rhel/.ssh
 sudo systemctl stop pulpcore-api
 sudo systemctl stop nginx
 sudo systemctl start snapd
-sudo certbot certonly --no-bootstrap --standalone -d privatehub-01.${GUID}.instruqt.io --email ansible-network@redhat.com --noninteractive --agree-tos
-sudo cp /etc/letsencrypt/live/privatehub-01.${GUID}.instruqt.io/privkey.pem /etc/pulp/certs/pulp_webserver.key
-sudo cp /etc/letsencrypt/live/privatehub-01.${GUID}.instruqt.io/fullchain.pem /etc/pulp/certs/pulp_webserver.crt
+sudo certbot certonly --no-bootstrap --standalone -d control-${GUID}.${DOMAIN} --email ansible-network@redhat.com --noninteractive --agree-tos
+sudo cp /etc/letsencrypt/live/control-${GUID}.${DOMAIN}/privkey.pem /etc/pulp/certs/pulp_webserver.key
+sudo cp /etc/letsencrypt/live/control-${GUID}.${DOMAIN}/fullchain.pem /etc/pulp/certs/pulp_webserver.crt
 sudo restorecon -v /etc/pulp/certs/pulp_webserver.crt
 sudo restorecon -v /etc/pulp/certs/pulp_webserver.key
 sudo systemctl start pulpcore-api

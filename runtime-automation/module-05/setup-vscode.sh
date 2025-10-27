@@ -10,10 +10,10 @@ cat <<EOF >> /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
 server_list = validated_repo,rh_certified_repo
 
 [galaxy_server.validated_repo]
-url=https://privatehub-01.${GUID}.instruqt.io/api/galaxy/content/validated/
+url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/validated/
 
 [galaxy_server.rh_certified_repo]
-url=https://privatehub-01.${GUID}.instruqt.io/api/galaxy/content/rh-certified/
+url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/rh-certified/
 
 EOF
 
@@ -24,7 +24,7 @@ version: 3
 
 images:
   base_image:
-    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
+    name: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel8:latest
 
 dependencies:
   galaxy:

@@ -13,7 +13,7 @@ version: 3
 
 images:
   base_image:
-    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
+    name: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel8:latest
 
 dependencies:
   galaxy:
@@ -43,7 +43,7 @@ version: 3
 
 images:
   base_image:
-    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
+    name: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel8:latest
 
 dependencies:
   galaxy:
@@ -73,11 +73,11 @@ cat <<EOF >> /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
 server_list = validated_repo,rh_certified_repo
 
 [galaxy_server.validated_repo]
-url=https://privatehub-01.${GUID}.instruqt.io/api/galaxy/content/validated/
+url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/validated/
 token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST control.lab -k | jq .token | xargs`
 
 [galaxy_server.rh_certified_repo]
-url=https://privatehub-01.${GUID}.instruqt.io/api/galaxy/content/rh-certified/
+url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/rh-certified/
 token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST control.lab -k | jq .token | xargs`
 
 EOF
@@ -92,9 +92,9 @@ chown -R rhel:rhel /home/rhel/.ssh
 sudo systemctl stop pulpcore-api
 sudo systemctl stop nginx
 sudo systemctl start snapd
-sudo certbot certonly --no-bootstrap --standalone -d privatehub-01.${GUID}.instruqt.io --email ansible-network@redhat.com --noninteractive --agree-tos
-sudo cp /etc/letsencrypt/live/privatehub-01.${GUID}.instruqt.io/privkey.pem /etc/pulp/certs/pulp_webserver.key
-sudo cp /etc/letsencrypt/live/privatehub-01.${GUID}.instruqt.io/fullchain.pem /etc/pulp/certs/pulp_webserver.crt
+sudo certbot certonly --no-bootstrap --standalone -d control-${GUID}.${DOMAIN} --email ansible-network@redhat.com --noninteractive --agree-tos
+sudo cp /etc/letsencrypt/live/control-${GUID}.${DOMAIN}/privkey.pem /etc/pulp/certs/pulp_webserver.key
+sudo cp /etc/letsencrypt/live/control-${GUID}.${DOMAIN}/fullchain.pem /etc/pulp/certs/pulp_webserver.crt
 sudo restorecon -v /etc/pulp/certs/pulp_webserver.crt
 sudo restorecon -v /etc/pulp/certs/pulp_webserver.key
 sudo systemctl start pulpcore-api
