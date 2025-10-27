@@ -66,11 +66,11 @@ cat > /home/rhel/minimal-downstream-with-hub/files/ansible.cfg <<EOF
 server_list = validated_repo,rh_certified_repo
 
 [galaxy_server.validated_repo]
-url=https://control-${GUID}.apps.ocpvdev01.rhdp.net/api/galaxy/content/validated/
+url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/validated/
 token=${token}
 
 [galaxy_server.rh_certified_repo]
-url=https://control-${GUID}.apps.ocpvdev01.rhdp.net/api/galaxy/content/rh-certified/
+url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/rh-certified/
 token=${token}
 EOF
 
