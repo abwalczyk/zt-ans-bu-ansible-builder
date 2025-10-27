@@ -5,7 +5,7 @@ set -e
 id rhel >/dev/null 2>&1 || useradd -m rhel
 
 # Run commands as rhel
-sudo -u rhel bash <<'EOF_RHEL'
+sudo -u rhel bash <<EOF_RHEL
 mkdir -p /home/rhel/minimal-downstream-with-hub/files/
 mkdir -p /home/rhel/minimal-downstream-with-hub/solution-definition/
 
