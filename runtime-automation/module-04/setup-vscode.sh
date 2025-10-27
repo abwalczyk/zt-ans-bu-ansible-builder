@@ -105,3 +105,5 @@ sudo restorecon -v /etc/pulp/certs/pulp_webserver.crt
 sudo restorecon -v /etc/pulp/certs/pulp_webserver.key
 sudo systemctl start pulpcore-api
 sudo systemctl start nginx
+
+EOF_RHEL

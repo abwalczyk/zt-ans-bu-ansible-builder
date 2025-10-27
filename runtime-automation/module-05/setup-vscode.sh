@@ -52,4 +52,5 @@ additional_build_steps:
     - RUN update-ca-trust
 
 EOF
-_
+
+EOF_RHEL
