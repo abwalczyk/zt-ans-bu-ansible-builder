@@ -3,9 +3,17 @@ curl -k  -L https://${SATELLITE_URL}/pub/katello-server-ca.crt -o /etc/pki/ca-tr
 update-ca-trust
 rpm -Uhv https://${SATELLITE_URL}/pub/katello-ca-consumer-latest.noarch.rpm || true
 
+tee /etc/profile.d/domain_guid.sh << EOF
+export DOMAIN="${DOMAIN}"
+export GUID="${GUID}"
+EOF
+
+chmod 644 /etc/profile.d/domain_guid.sh
+
 subscription-manager status >/dev/null 2>&1 || \
   subscription-manager register --org=${SATELLITE_ORG} --activationkey=${SATELLITE_ACTIVATIONKEY} --force
 setenforce 0
+
 echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
 chmod 440 /etc/sudoers.d/rhel_sudoers
 sudo -u rhel mkdir -p /home/rhel/.ssh
