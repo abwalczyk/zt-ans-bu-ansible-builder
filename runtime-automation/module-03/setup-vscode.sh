@@ -5,7 +5,8 @@ set -e
 id rhel >/dev/null 2>&1 || useradd -m rhel
 
 # Run commands as rhel
-sudo -u rhel bash <<EOF_RHEL
+# Run commands as rhel
+sudo -u rhel bash <<'EOF_RHEL'
 source /etc/profile.d/domain_guid.sh
 
 mkdir -p /home/rhel/minimal-downstream-with-hub/files/
