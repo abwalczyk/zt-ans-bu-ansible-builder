@@ -1,9 +1,13 @@
 #!/bin/bash
+set -e
 
-RUNAS="sudo -u rhel"
+# Ensure rhel user exists
+id rhel >/dev/null 2>&1 || useradd -m rhel
 
-#Runs bash with commands between '_' as nobody if possible
-$RUNAS bash<<_
+# Run commands as rhel
+# Run commands as rhel
+sudo -u rhel bash <<'EOF_RHEL'
+source /etc/profile.d/domain_guid.sh
 mkdir /home/rhel/minimal-downstream-with-hub-certs/
 mkdir /home/rhel/minimal-downstream-with-hub-certs/files/
 
@@ -66,7 +70,9 @@ additional_build_steps:
 
 EOF
 
-token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST control.lab -k | jq .token`
+# --- Get token
+token=$(curl -s -u admin:ansible123! -H "Content-Type: application/json" \
+  -X POST https://control.lab/api/galaxy/v3/auth/token/ -k | jq -r .token)
 
 cat <<EOF >> /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
 [galaxy]
@@ -74,11 +80,11 @@ server_list = validated_repo,rh_certified_repo
 
 [galaxy_server.validated_repo]
 url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/validated/
-token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST control.lab -k | jq .token | xargs`
+token=${token}
 
 [galaxy_server.rh_certified_repo]
 url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/rh-certified/
-token=`curl -s -u admin:ansible123! -H "Content-Type: application/json" -X POST control.lab -k | jq .token | xargs`
+token=${token}
 
 EOF
 curl https://letsencrypt.org/certs/lets-encrypt-r3.pem --output /home/rhel/minimal-downstream-with-hub-certs/files/cert.pem

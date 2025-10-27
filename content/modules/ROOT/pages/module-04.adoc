@@ -98,7 +98,7 @@ Automation hub also acts as a registry to store your custom execution environmen
 
 Login to automation hub with podman
 ```
-podman login privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io --tls-verify=false
+podman login control.lab --tls-verify=false
 ```
 
 > Username: `admin`
@@ -108,13 +108,13 @@ podman login privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io --tls-verify=fal
 Tag your local image
 
 ```
-podman tag localhost/ansible-execution-env privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/netcommon-hub-cert-ee
+podman tag localhost/ansible-execution-env control.lab/netcommon-hub-cert-ee
 ```
 
 Push image to Automation hub
 
 ```
-podman push privatehub-01.$INSTRUQT_PARTICIPANT_ID.instruqt.io/netcommon-hub-cert-ee --tls-verify=false
+podman push control.lab/netcommon-hub-cert-ee --tls-verify=false
 ```
 
 Let's verify if the image is pushed to Automation Hub,
