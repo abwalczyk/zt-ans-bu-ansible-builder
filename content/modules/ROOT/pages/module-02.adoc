@@ -74,7 +74,7 @@ Add this to the `execution-environment.yml` after the version line:
 ----
 images:
   base_image:
-    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
+    name: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel8:latest
 ----
 
 Now you might be asking yourself what image this refers to.  
