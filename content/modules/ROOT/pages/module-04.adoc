@@ -10,7 +10,7 @@ Please go through the tasks in this challenge to understand how to interact with
 
 == ☑️ Task - Definition file from last challenge
 
-On the VS Code tab on the left side, you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called `execution-environment.yml`.
+On the *VS Code* tab on the left side you will see that we have a tab called "file." Click File->Open folder and select the directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called `execution-environment.yml`.
 
 This file is the same as the one we created from the last challenge when we pulled the collection from Automation Hub. This will be the starting point for this challenge, and we will fix the SSL error from the last challenge without using a workaround.
 

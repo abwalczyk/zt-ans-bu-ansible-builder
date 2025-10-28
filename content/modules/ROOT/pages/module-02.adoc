@@ -20,7 +20,7 @@ Please go through the tasks in this challenge to understand how to interact with
 
 == ☑️ Task - The definition file
 
-On the *VS Code* tab on the left side you will see that we have a directory opened called `minimal-downstream-from-galaxy` and this directory has a file called `execution-environment.yml`.
+On the *VS Code* tab on the left side you will see that we have a tab called "file." Click File->Open folder and select the directory opened called `minimal-downstream-from-galaxy` and this directory has a file called `execution-environment.yml`.
 
 This file is our execution environment definition file, and the default name for this file is `execution-environment.yml`.  
 By *default* we mean that if we just run the `build` subcommand of `ansible-builder` in this directory, `ansible-builder` will understand that it needs to look at this file for the definition of the execution environment it needs to create.

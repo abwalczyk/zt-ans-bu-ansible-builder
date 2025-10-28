@@ -8,19 +8,6 @@ id rhel >/dev/null 2>&1 || useradd -m rhel
 # Run commands as rhel
 sudo -u rhel bash <<'EOF_RHEL'
 source /etc/profile.d/domain_guid.sh
-rm /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
-
-cat <<EOF >> /home/rhel/minimal-downstream-with-hub-certs/files/ansible.cfg
-[galaxy]
-server_list = validated_repo,rh_certified_repo
-
-[galaxy_server.validated_repo]
-url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/validated/
-
-[galaxy_server.rh_certified_repo]
-url=https://control-${GUID}.${DOMAIN}/api/galaxy/content/rh-certified/
-
-EOF
 
 rm /home/rhel/minimal-downstream-with-hub-certs/solution-definition/execution-environment.yml
 cat > /home/rhel/minimal-downstream-with-hub-certs/solution-definition/execution-environment.yml << EOF
@@ -34,7 +21,7 @@ images:
 dependencies:
   galaxy:
     collections:
-    - ansible.netcommon
+      - ansible.netcommon
 
 options:
   package_manager_path: /usr/bin/microdnf
@@ -50,7 +37,6 @@ additional_build_steps:
   prepend_base:
     - COPY _build/configs/cert.pem /etc/pki/ca-trust/source/anchors/cert.pem
     - RUN update-ca-trust
-
 EOF
 
 EOF_RHEL

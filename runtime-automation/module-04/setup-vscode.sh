@@ -52,7 +52,7 @@ images:
 dependencies:
   galaxy:
     collections:
-    - ansible.netcommon
+      - ansible.netcommon
 
 options:
   package_manager_path: /usr/bin/microdnf
@@ -67,7 +67,6 @@ additional_build_steps:
   prepend_base:
     - COPY _build/configs/cert.pem /etc/pki/ca-trust/source/anchors/cert.pem
     - RUN update-ca-trust
-
 EOF
 
 # --- Get token
