@@ -1,187 +1,144 @@
-👋 Introduction
-===
-In this section we will create an execution environment using `ansible-builder`.
+= 👋 Introduction
 
-For this challenge we are going to fix the SSL errors that we faced in last challenge properly instead of just ignoring the cert errors.
+In this section, we will create an execution environment using `ansible-builder`.
 
-*Note*: A quick note before we dive-in, the editor we are is VSCode and it maybe unfamiliar for some folks. But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge, if you are confused at any time there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any yaml errors.
+For this challenge, we are going to fix the SSL errors that we faced in the last challenge properly instead of just ignoring the certificate errors.
 
-Please go through the tasks in this challenges to understand how to interact with `ansible-builder` v3
+NOTE: A quick note before we dive in — the editor we are using is VSCode and it may be unfamiliar for some folks. We will keep the instructions simple enough and gradually build upon what we are doing in each challenge. If you are confused at any time, there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any YAML errors.
 
-☑️ Task - Definition file from last challenge
-===
+Please go through the tasks in this challenge to understand how to interact with `ansible-builder` v3.
 
-On the VSCode tab on the left side you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called as `execution-environment.yml`.
+== ☑️ Task - Definition file from last challenge
 
-This file is the same as the one we created from the last challenge when we pulled the collection from Automation hub. This will be starting point for this challenge and we will fix the SSL error from last challenge, without using a workaround.
+On the VSCode tab on the left side, you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called `execution-environment.yml`.
 
-For this task, just verify the content of the definition file to ensure that it matches with what we learned in last challenge.
+This file is the same as the one we created from the last challenge when we pulled the collection from Automation Hub. This will be the starting point for this challenge, and we will fix the SSL error from the last challenge without using a workaround.
 
-☑️ Task - Intermideate certificate file.
-===
-We have created an `cert.pem` file that is the intermideate certificate needed to do SSL verification. It is placed in the `files` directory adjacent to the `execution-environment.yml` file
-![image.png](https://play.instruqt.com/assets/tracks/w3polihv5eqs/5369663ef7c20d5028f7b38a2605259f/assets/image.png)
+For this task, just verify the content of the definition file to ensure that it matches with what we learned in the last challenge.
 
-Our challenge is to inform `ansible-builder` about this file and add this file to the correct location in the execution environment. This way builder will be able to download the collections without the SSL Verification errors.
+== ☑️ Task - Intermediate certificate file
 
-☑️ Task - Remove the workaround from the last challenge.
-===
+We have created a `cert.pem` file that is the intermediate certificate needed to do SSL verification. It is placed in the `files` directory adjacent to the `execution-environment.yml` file.
+
+image::https://play.instruqt.com/assets/tracks/w3polihv5eqs/5369663ef7c20d5028f7b38a2605259f/assets/image.png[]
+
+Our challenge is to inform `ansible-builder` about this file and add this file to the correct location in the execution environment. This way, the builder will be able to download the collections without SSL verification errors.
+
+== ☑️ Task - Remove the workaround from the last challenge
+
 Firstly, we will remove the workaround that we added to ignore certificates from our definition file.
-Go ahead and remove the following lines from the `execution-environment.yml` file.
-```
+
+Go ahead and remove the following lines from the `execution-environment.yml` file:
+
+----
 build_arg_defaults:
   ANSIBLE_GALAXY_CLI_COLLECTION_OPTS: '--ignore-certs'
-```
+----
 
-Once removed you can either try to replicate the error again or just move ahead to the next task. To replicate, just run the following command in the terminal
+Once removed, you can either try to replicate the error again or just move ahead to the next task. To replicate, run the following command in the terminal:
 
-```
+----
 ansible-builder build -v 3
-```
+----
 
-☑️ Task - Add the certificate to our definition file.
-===
-Our task is to add the `cert.pem` file to our execution environment, to do so we want to create a section like the `prepend_galaxy` section in our definition file.
-This section is called `prepend_base` and it is another stage in our execution environment creation, as this is a certificate addition we want to do this at an initial stage and `base` is the exact right spot to do so.
+== ☑️ Task - Add the certificate to our definition file
 
-Do the following changes in your `execution-environment.yml` below the `prepend_galaxy` section
+Our task is to add the `cert.pem` file to our execution environment. To do so, we want to create a section like the `prepend_galaxy` section in our definition file.
 
-```
+This section is called `prepend_base` and it is another stage in our execution environment creation. As this is a certificate addition, we want to do this at an initial stage, and `base` is the exact right spot to do so.
+
+Do the following changes in your `execution-environment.yml` below the `prepend_galaxy` section:
+
+----
 prepend_base:
   - COPY _build/configs/cert.pem /etc/pki/ca-trust/source/anchors/
   - RUN update-ca-trust
-```
+----
 
-This section is part of the `additional_build_steps` section in definition file, after the addition your section should look like this
+This section is part of the `additional_build_steps` section in the definition file. After the addition, your section should look like this:
 
-```
+----
 additional_build_steps:
   prepend_galaxy:
     - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
   prepend_base:
     - COPY _build/configs/cert.pem /etc/pki/ca-trust/source/anchors/
     - RUN update-ca-trust
-```
+----
 
-**NOTE** You must be wondering if this is the initial stage why are we adding this below the `prepend_galaxy` stage? You can do this because the definition schema is a yaml dictionary, because of that the name matters instead of the position. You can try changing the position of these section and check the behavior of ansible-builder.
+NOTE: You must be wondering if this is the initial stage, why are we adding this below the `prepend_galaxy` stage? You can do this because the definition schema is a YAML dictionary — the name matters instead of the position. You can try changing the position of these sections and check the behavior of `ansible-builder`.
 
-☑️ Task - Let's try our fix
-===
+== ☑️ Task - Let's try our fix
+
 Now that you have added the fix for the certificate, let's try rebuilding our execution environment.
-Run the following command
 
-```
+Run the following command:
+
+----
 ansible-builder build -v 3
-```
+----
 
-Hopefully, if you have done everything correctly you should have your new execution environment.
+Hopefully, if you have done everything correctly, you should have your new execution environment.
 
-☑️ Task - Let's check what's built
-===
+== ☑️ Task - Let's check what's built
 
-Run the following command to check the image that was created
+Run the following command to check the image that was created:
 
-```
+----
 podman images
-```
+----
 
-You will see that it builds an execution environment called `localhost/ansible-execution-env` by default, this is our execution environment built with the collection we need from hub with the certificate fix.
-You can tag the image post build if you want using the podman CLI using the following command, please run this command.
-```
+You will see that it builds an execution environment called `localhost/ansible-execution-env` by default.  
+This is our execution environment built with the collection we need from Automation Hub with the certificate fix.
+
+You can tag the image post-build if you want, using the Podman CLI:
+
+----
 podman tag localhost/ansible-execution-env localhost/netcommon-hub-cert-ee
-```
-Hurray, you have now created an execution environment with a collection from automation hub by fixing the certificate error.
+----
 
-☑️ Task - Let's push this EE to Automation Hub
-===
-Automation hub also acts as a registry to store your custom execution environments. To push this execution environment to Automation hub, you need to first tag the EE with a new name and address of the automation hub, please run the following commands.
+Hurray! You have now created an execution environment with a collection from Automation Hub by fixing the certificate error.
 
-Login to automation hub with podman
-```
+== ☑️ Task - Let's push this EE to Automation Hub
+
+Automation Hub also acts as a registry to store your custom execution environments.  
+To push this execution environment to Automation Hub, you need to first tag the EE with a new name and address of the Automation Hub.  
+Run the following commands:
+
+Login to Automation Hub with Podman:
+
+----
 podman login control.lab --tls-verify=false
-```
+----
 
-> Username: `admin`
->
+> Username: `admin`  
 > Password: `ansible123!`
 
-Tag your local image
+Tag your local image:
 
-```
+----
 podman tag localhost/ansible-execution-env control.lab/netcommon-hub-cert-ee
-```
+----
 
-Push image to Automation hub
+Push image to Automation Hub:
 
-```
+----
 podman push control.lab/netcommon-hub-cert-ee --tls-verify=false
-```
+----
 
-Let's verify if the image is pushed to Automation Hub,
-- Go to Automation Hub tab
-- Login using the below credentials
-> Username: `admin`
->
-> Password: `ansible123!`
+Let's verify if the image is pushed to Automation Hub:
 
-- Go to the "Execution Environments" section on the left hand side and you should see the recent execution environment pushed to Automation Hub.
+- Go to the Automation Hub tab
+- Login using the below credentials  
+  Username: `admin`  
+  Password: `ansible123!`
+- Go to the *Execution Environments* section on the left-hand side and you should see the recent execution environment pushed to Automation Hub.
 
-In the next challenge, we will try to pull the collection without the token inside the ansible.cfg file.
+== ✅ Next Challenge
 
-✅ Next Challenge
-===
-Press the `Check` button below to go to the next challenge once you’ve completed the tasks.
+Press the *Check* button below to go to the next challenge once you’ve completed the tasks.
 
-🐛 Encountered an issue?
-====
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new).
+== 🐛 Encountered an issue?
 
-<style type="text/css" rel="stylesheet">
-  .lightbox {
-    display: none;
-    position: fixed;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.8);
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: auto;
-    margin-bottom: auto;
-  }
-  .lightbox:target {
-    display: flex;
-  }
-  .lightbox img {
-    /* max-height: 100% */
-    max-width: 60%;
-    max-height: 60%;
-  }
-  img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  h1 {
-    font-size: 18px;
-  }
-  h2 {
-    font-size: 16px;
-    font-weight: 600
-  }
-  h3 {
-    font-size: 14px;
-    font-weight: 600
-  }
-  p span {
-    font-size: 14px;
-  }
-  ul li span {
-    font-size: 14px
-  }
-</style>
+If you have encountered an issue or have noticed something not quite right, please open an issue:  
+https://github.com/ansible/instruqt/issues/new

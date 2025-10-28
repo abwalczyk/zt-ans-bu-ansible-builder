@@ -1,202 +1,172 @@
-👋 Introduction
-===
-In this section we will create an execution environment using `ansible-builder`.
+= 👋 Introduction
 
-For this challenge we are building an execution environment and the collection will be pulled from the Automation hub that is baked into this lab. Our task for this challenge is to create an execution environment with the `ansible.netcommon` collection form **Automation Hub** on top of the minimal execution environment.
+In this section, we will create an execution environment using `ansible-builder`.
 
-*Note*: A quick note before we dive-in, the editor we are is VSCode and it maybe unfamiliar for some folks. But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge, if you are confused at any time there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any yaml errors.
+For this challenge, we are building an execution environment and the collection will be pulled from the Automation Hub that is baked into this lab. Our task for this challenge is to create an execution environment with the `ansible.netcommon` collection from *Automation Hub* on top of the minimal execution environment.
 
-Please go through the tasks in this challenges to understand how to interact with `ansible-builder` v3
+NOTE: The editor we are using is VSCode and it may be unfamiliar for some folks. But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge. If you are confused at any time, there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace the content for your current definition file if you are unable to solve any YAML errors.
 
-☑️ Task - Basic definition file from last challenge
-===
+Please go through the tasks in this challenge to understand how to interact with `ansible-builder` v3.
 
-On the VSCode tab on the left side you will see that we have a directory opened called `minimal-downstream-from-hub` and this directory has a file called as `execution-environment.yml`.
+== ☑️ Task - Basic definition file from last challenge
 
-This file is the same as the one we created from the last challenge when we pulled the collection from Ansible Galaxy. This will be starting point for this challenge and we will slowly build on creating a definition file that can pull the collections from Automation hub.
+On the VSCode tab on the left side, you will see that we have a directory opened called `minimal-downstream-from-hub`, and this directory has a file called `execution-environment.yml`.
 
-For this task, just verify the content of the definition file to ensure that it matches with what we learned in last challenge.
+This file is the same as the one we created from the last challenge when we pulled the collection from Ansible Galaxy. This will be the starting point for this challenge, and we will slowly build on creating a definition file that can pull the collections from Automation Hub.
 
-☑️ Task - ansible.cfg file
-===
-We have created an `ansible.cfg` file in the files directory adjacent to our definition file.
-![image.png](https://play.instruqt.com/assets/tracks/w3polihv5eqs/49b66e1b2eacbe507d9b83a3fe86cad1/assets/image.png)
+For this task, just verify the content of the definition file to ensure that it matches what we learned in the last challenge.
 
-This directory contains an `ansible.cfg` file which points to the Automation hub in our lab, you can follow the [documentation](https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.4/html/getting_started_with_automation_hub/index) to understand how to build your own `ansible.cfg` file.
+== ☑️ Task - ansible.cfg file
 
-The idea here is to tell `ansible-galaxy` cli about where it needs to look for collections and also provide a token to download the collections from automation hub. We have added the URL of the rh_certified repo(as that repo has the netcommon collection) and the token alongside it.
+We have created an `ansible.cfg` file in the `files` directory adjacent to our definition file.
 
-With the execution environment build process, as builder would be downloading collection and adding then to the execution environment, it needs to know about the `ansible.cfg` file if you want to build with collections from Automation hub.
+image::https://play.instruqt.com/assets/tracks/w3polihv5eqs/49b66e1b2eacbe507d9b83a3fe86cad1/assets/image.png[]
 
-For this task, just check the content of the `ansible.cfg` file as we will be using the file in the execution environment definition in the next tasks.
+This directory contains an `ansible.cfg` file which points to the Automation Hub in our lab. You can follow the https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.4/html/getting_started_with_automation_hub/index[documentation] to understand how to build your own `ansible.cfg` file.
 
-☑️ Task - Adding ansible.cfg to the definition file
-===
-The addition of `ansible.cfg` needs to happen in two steps.
+The idea here is to tell the `ansible-galaxy` CLI about where it needs to look for collections and also provide a token to download the collections from Automation Hub. We have added the URL of the `rh_certified` repo (as that repo has the `netcommon` collection) and the token alongside it.
 
-Firstly, we will copy the content of `files` directory to the `_build/configs` directory in the build context.
-Secondly, we will copy the `ansible.cfg` file from the `_build/configs` directory to the ansible config default location on the EE, which is `/etc/ansible/ansible.cfg`
+With the execution environment build process, as `ansible-builder` would be downloading the collection and adding it to the execution environment, it needs to know about the `ansible.cfg` file if you want to build with collections from Automation Hub.
 
-*NOTE*: `_build` directory inside the context directory contains all the additional build files, its important to note the name of this directory as it will be important when you are building custom content into your execution environment , like we are doing in this task.
+For this task, just check the content of the `ansible.cfg` file, as we will be using it in the execution environment definition in the next tasks.
 
-Add the following two sections to the end of the `execution-environment.yml` file
+== ☑️ Task - Adding ansible.cfg to the definition file
 
-```
+The addition of `ansible.cfg` needs to happen in two steps:
+
+1. Copy the contents of the `files` directory to the `_build/configs` directory in the build context.
+2. Copy the `ansible.cfg` file from the `_build/configs` directory to the Ansible config default location on the EE, which is `/etc/ansible/ansible.cfg`.
+
+NOTE: The `_build` directory inside the context directory contains all the additional build files. It’s important to note the name of this directory as it will be important when you are building custom content into your execution environment, like we are doing in this task.
+
+Add the following two sections to the end of the `execution-environment.yml` file:
+
+[source,yaml]
+----
 additional_build_files:
-  # copy arbitary files next to this EE Definition into the build context - we can refer to them later
+  # Copy arbitrary files next to this EE Definition into the build context
   - src: files
     dest: configs
-
 
 additional_build_steps:
   prepend_galaxy:
     - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
-```
+----
 
-In the above section you will see that we added a section called `additional_build_files`, this tells ansible-builder where to copy the additional build files in the context. In this case the `files` directory gets copied to `_build/configs` directory.
-The next section, called `additional_build_steps` tells builder about the additional build steps it needs to take, this section can have multiple subsection and you can consider each subsection as a build stage. In this case, we are prepending steps to the galaxy stage (collection download stage) and telling builder to copy the `ansible.cfg` in `_build/configs` to /etc/ansible/ansible.cfg`
+In the above section, you can see that we added a section called `additional_build_files`. This tells `ansible-builder` where to copy the additional build files in the context. In this case, the `files` directory gets copied to `_build/configs`.
 
-The idea here is to copy the ansible config file to execution environment so that `ansible-galaxy` can point to the local Automation hub.
+The next section, called `additional_build_steps`, tells the builder about the additional build steps it needs to take. This section can have multiple subsections, and you can consider each subsection as a build stage. In this case, we are prepending steps to the Galaxy stage (collection download stage) and telling the builder to copy the `ansible.cfg` in `_build/configs` to `/etc/ansible/ansible.cfg`.
 
-☑️ Task - Let's re-run ansible-builder
-===
+The idea here is to copy the Ansible config file to the execution environment so that `ansible-galaxy` can point to the local Automation Hub.
 
-Please open the terminal windown and re-run the ansible-builder.
+== ☑️ Task - Let's re-run ansible-builder
 
-```
+Please open the terminal window and re-run `ansible-builder`:
+
+[source,bash]
+----
 ansible-builder build -v 3
-```
+----
 
-You will see that the build returns in an SSL certificate error when trying to pull collections from Automation Hub, to fix this you will need to bypass the certificate errors in the definition file.
+You will see that the build returns an SSL certificate error when trying to pull collections from Automation Hub. To fix this, you will need to bypass the certificate errors in the definition file.
 
 Let's do that in the next task.
 
-**Note** We will also show how you can add certificates in the next challange.
+NOTE: We will also show how you can add certificates properly in the next challenge.
 
-☑️ Task - Bypass SSL error while building
-===
-To bypass the SSL error add the following section in the `execution-environment.yml` file.
+== ☑️ Task - Bypass SSL error while building
 
-```
+To bypass the SSL error, add the following section in the `execution-environment.yml` file:
+
+[source,yaml]
+----
 build_arg_defaults:
   ANSIBLE_GALAXY_CLI_COLLECTION_OPTS: '--ignore-certs'
-```
+----
 
-This option will add the `--ignore-certs` option to the `ansible-galaxy` CLI when ansible-builder is building the execution environment, this is just a workaround we will provide a permanent solution in the next challenge. The idea here is to describe different customizations you can do in the build process. Let's re-run `ansible-builder`
+This option will add the `--ignore-certs` option to the `ansible-galaxy` CLI when `ansible-builder` is building the execution environment. This is just a workaround — we will provide a permanent solution in the next challenge. The idea here is to describe different customizations you can do in the build process.
 
-In the Terminal, type the following command again.
+Let's re-run `ansible-builder`:
 
-```
+[source,bash]
+----
 ansible-builder build -v 3
-```
+----
 
-This command will take a minute or two to complete
+This command will take a minute or two to complete.
 
-☑️ Task - Let's check what's built
-===
+== ☑️ Task - Let's check what's built
 
-Run the following command to check the image that was created
+Run the following command to check the image that was created:
 
-```
+[source,bash]
+----
 podman images
-```
+----
 
-You will see that it builds an execution environment called `localhost/ansible-execution-env` by default, this is our execution environment built with the collection we need.
-You can tag the image post build if you want using the podman CLI using the following command, please run this command.
-```
+You will see that it builds an execution environment called `localhost/ansible-execution-env` by default. This is our execution environment built with the collection we need.
+
+You can tag the image post-build if you want using the `podman` CLI:
+
+[source,bash]
+----
 podman tag localhost/ansible-execution-env localhost/netcommon-hub-ee
-```
+----
 
-☑️ Task - Let's push this EE to Automation Hub
-===
-Automation hub also acts as a registry to store your custom execution environments. To push this execution environment to Automation hub, you need to first tag the EE with a new name and address of the automation hub, please run the following commands.
+== ☑️ Task - Let's push this EE to Automation Hub
 
-Login to automation hub with podman
-```
+Automation Hub also acts as a registry to store your custom execution environments. To push this execution environment to Automation Hub, you need to first tag the EE with a new name and address of the Automation Hub.
+
+Login to Automation Hub with Podman:
+
+[source,bash]
+----
 podman login control.lab --tls-verify=false
-```
+----
 
-> Username: `admin`
->
-> Password: `ansible123!`
+[cols="1,1"]
+|===
+|Username | `admin`
+|Password | `ansible123!`
+|===
 
-Tag your local image
+Tag your local image:
 
-```
+[source,bash]
+----
 podman tag localhost/ansible-execution-env control.lab/netcommon-hub-ee
-```
+----
 
-Push image to Automation hub
+Push the image to Automation Hub:
 
-```
+[source,bash]
+----
 podman push control.lab/netcommon-hub-ee --tls-verify=false
-```
+----
 
-Let's verify if the image is pushed to Automation Hub,
-- Go to Automation Hub tab
-- Login using the below credentials
-> Username: `admin`
->
-> Password: `ansible123!`
+Let's verify if the image is pushed to Automation Hub:
 
-- Go to the "Execution Environments" section on the left hand side and you should see the recent execution environment pushed to Automation Hub.
+- Go to the *Automation Hub* tab
+- Login using the below credentials:
 
-Hurray, you have now created an execution environment with a collection from automation hub by ignoring the certificate errors and pushed it to Automation hub. In the next challange, we will try to fix the certificate errors properly.
+[cols="1,1"]
+|===
+|Username | `admin`
+|Password | `ansible123!`
+|===
 
-✅ Next Challenge
-===
-Press the `Check` button below to go to the next challenge once you’ve completed the tasks.
+- Go to the *Execution Environments* section on the left-hand side, and you should see the recent execution environment pushed to Automation Hub.
 
-🐛 Encountered an issue?
-====
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new).
+🎉 *Hurray!* You have now created an execution environment with a collection from Automation Hub by ignoring the certificate errors and pushed it to Automation Hub.
 
-<style type="text/css" rel="stylesheet">
-  .lightbox {
-    display: none;
-    position: fixed;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.8);
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: auto;
-    margin-bottom: auto;
-  }
-  .lightbox:target {
-    display: flex;
-  }
-  .lightbox img {
-    /* max-height: 100% */
-    max-width: 60%;
-    max-height: 60%;
-  }
-  img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  h1 {
-    font-size: 18px;
-  }
-  h2 {
-    font-size: 16px;
-    font-weight: 600
-  }
-  h3 {
-    font-size: 14px;
-    font-weight: 600
-  }
-  p span {
-    font-size: 14px;
-  }
-  ul li span {
-    font-size: 14px
-  }
-</style>
+In the next challenge, we will try to fix the certificate errors properly.
+
+== ✅ Next Challenge
+
+Press the *Check* button below to go to the next challenge once you’ve completed the tasks.
+
+== 🐛 Encountered an issue?
+
+If you have encountered an issue or have noticed something not quite right, please open an issue at:
+
+https://github.com/ansible/instruqt/issues/new

@@ -1,197 +1,199 @@
-👋 Introduction
-===
-In this section we will create an execution environment using `ansible-builder`. You will notice that this section only has VSCode tab enabled, this is because we will not be using Automation Hub to pull collections for this challenge.
+= 👋 Introduction
 
-*Note*: A quick note before we dive-in, the editor we are using is VSCode and it may be unfamiliar for some folks. But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge, if you are confused at any time there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any yaml errors.
+In this section we will create an execution environment using `ansible-builder`.  
+You will notice that this section only has the *VSCode* tab enabled — this is because we will not be using Automation Hub to pull collections for this challenge.
 
-For this challenge we are doing a basic execution environment and the collection will be pulled from the community galaxy(galaxy.ansible.com) which is the default hub to pull collections from. Our task for this challenge is to create an execution environment with the `ansible.netcommon` collection from Ansible galaxy on top of the minimal execution environment.
+[NOTE]
+====
+A quick note before we dive in: the editor we are using is VSCode and it may be unfamiliar for some folks.  
+But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge.  
+If you are confused at any time, there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge.  
+You can copy and replace content for your current definition file if you are unable to solve any YAML errors.
+====
 
-In the next challenges we will show how to inform ansible-builder to pull collections from Automation Hub.
+For this challenge we are doing a basic execution environment and the collection will be pulled from the community Galaxy (`galaxy.ansible.com`), which is the default hub to pull collections from.  
+Our task for this challenge is to create an execution environment with the `ansible.netcommon` collection from Ansible Galaxy on top of the minimal execution environment.
 
-Please go through the tasks in this challenges to understand how to interact with `ansible-builder` v3
+In the next challenges we will show how to inform `ansible-builder` to pull collections from Automation Hub.
 
-☑️ Task - The definition file
-===
+Please go through the tasks in this challenge to understand how to interact with `ansible-builder` v3.
 
-On the VSCode tab on the left side you will see that we have a directory opened called `minimal-downstream-from-galaxy` and this directory has a file called as `execution-environment.yml`.
+== ☑️ Task - The definition file
 
-This file is our execution environment definition file and the default name for this file is `execution-environment.yml`, by **default** we mean that if we just run the `build` subcommand of `ansible-builder` in this directory, ansible-builder will understand that it needs to look at this file for the definition of execution environment it needs to create.
+On the *VSCode* tab on the left side you will see that we have a directory opened called `minimal-downstream-from-galaxy` and this directory has a file called `execution-environment.yml`.
 
-*Note* : For this task we have created an empty execution-environment.yml file for you, but in usual scenarios a user will have to create this directory as well as this file.
+This file is our execution environment definition file, and the default name for this file is `execution-environment.yml`.  
+By *default* we mean that if we just run the `build` subcommand of `ansible-builder` in this directory, `ansible-builder` will understand that it needs to look at this file for the definition of the execution environment it needs to create.
 
-You can also create any file name you want, but if you change the file name you will have to inform ansible-builder which file to pick definition from, information on this is available in the `ansible-builder build --help` command, Let's show an example of a different definition file name.
+[NOTE]
+====
+For this task we have created an empty `execution-environment.yml` file for you, but in usual scenarios a user will have to create this directory as well as this file.
+====
 
-```
+You can also create any file name you want, but if you change the file name you will have to inform `ansible-builder` which file to pick the definition from.  
+Information on this is available in the `ansible-builder build --help` command.  
+Here’s an example of a different definition file name:
+
+[source,text]
+----
   -f FILENAME, --file FILENAME
 The definition of the execution environment (default: execution-environment.yml)
-```
+----
 
-Suppose if we create the definition file name as `ee-definition.yml`, then we can run the following command to build execution environment.
+Suppose we create the definition file as `ee-definition.yml`, then we can run the following command to build the execution environment:
 
-```
+[source,shell]
+----
 ansible-builder build -f ee-definition.yml
-```
+----
 
-Above command will not do anything and if you run this it will cause errors saying the `ee-definition.yml` is not found. For this lab, we will stick to the default name `execution-environment.yml` for the definition file.
+The above command will not do anything in this lab, and if you run it you’ll see an error saying that `ee-definition.yml` is not found.  
+For this lab, we will stick to the default name `execution-environment.yml` for the definition file.
 
-☑️ Task - Adding version to the definition file
-===
-As we mentioned that we are using ansible-builder version 3.0.0 for this lab, this also means that to take advantage of features provided with this version you need to add an identifier in the definition file. If you don't do this `ansible-builder` v3 will fail to understand the schema of the definition and some keys that are newly introduced resulting in failures.
+== ☑️ Task - Adding version to the definition file
 
-For this task, just add the following line to the execution-environment.yml
+As we mentioned that we are using `ansible-builder` version 3.0.0 for this lab, this also means that to take advantage of features provided with this version you need to add an identifier in the definition file.  
+If you don't do this, `ansible-builder` v3 will fail to understand the schema of the definition and some keys that are newly introduced, resulting in failures.
 
-```
+For this task, just add the following line to the `execution-environment.yml`:
+
+[source,yaml]
+----
 version: 3
-```
+----
 
+== ☑️ Task - Adding the Base image
 
-☑️ Task - Adding the Base image
-===
-As we know that execution environments are container images acting as Ansible environments, an important aspect for the defintion file is to define a base image that builder will use to build an EE. Think of this step as the starting point for your execution environment and then we keeps on adding things on top.
+Execution environments are container images acting as Ansible environments.  
+An important aspect for the definition file is to define a base image that the builder will use to build an EE.  
+Think of this step as the starting point for your execution environment, and then we keep adding things on top.
 
-Add this to the `execution-environment.yml` after the version line
+Add this to the `execution-environment.yml` after the version line:
 
-```
+[source,yaml]
+----
 images:
   base_image:
     name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel8:latest
-```
+----
 
-Now you might be asking yourself, what image is this referring to - The Answer to that is this is minimal execution environment that is supplied with AAP2.4 which is the latest release of Ansible Automation Platform. Another image that comes with the platform is the supported execution environment which also has the Ansible supported collection baked on top of minimal execution environment.
+Now you might be asking yourself what image this refers to.  
+The answer: this is the minimal execution environment supplied with AAP 2.4, which is the latest release of Ansible Automation Platform.  
+Another image that comes with the platform is the supported execution environment, which also has the Ansible supported collections baked on top of the minimal execution environment.
 
-For the purpose of this lab as we are showing how to build an execution environment, we are starting from the minimal execution environment as the base image for our EE.
+For the purpose of this lab, as we are showing how to build an execution environment, we are starting from the minimal execution environment as the base image for our EE.
 
-☑️ Task - Adding the collection to EE
-===
+== ☑️ Task - Adding the collection to EE
 
-Next step is to add the collection that we want to take into our execution environment. For this challenge as we are adding `ansible.netcommon` collection from the default galaxy, we don't need to add an `ansible.cfg` to point to the Automation hub used in this lab. A simple collection definition for EE looks like this, and you can add this to the `execution-environment.yml` file after the `images` section
+Next step is to add the collection that we want to include in our execution environment.  
+For this challenge, as we are adding the `ansible.netcommon` collection from the default Galaxy, we don't need to add an `ansible.cfg` to point to the Automation Hub used in this lab.
 
-```
+A simple collection definition for EE looks like this — add this to the `execution-environment.yml` file after the `images` section:
+
+[source,yaml]
+----
 dependencies:
   galaxy:
     collections:
       - ansible.netcommon
-```
+----
 
-The above section specifies that we need to bake the `ansible.netcommon` collection in the execution environment. There are different dependencies you can specify for your execution-environment in this section like `python` and `system` dependencies based on your automation needs.
+The above section specifies that we need to bake the `ansible.netcommon` collection into the execution environment.  
+There are different dependencies you can specify for your execution environment in this section, like `python` and `system` dependencies, based on your automation needs.
 
-One advantage of the builder v3 is you can specify the dependencies inline as compared to builder v1 where you can specify dependencies in a `requirements.yml` file. v3 gives you both of these options, either specify inline or specify requirements in a file. For a sample of a details definition file, check this [link](https://ansible.readthedocs.io/projects/builder/en/stable/definition/#execution-environment-definition)
+One advantage of builder v3 is that you can specify dependencies inline, compared to builder v1 where you had to specify dependencies in a `requirements.yml` file.  
+v3 gives you both options — either specify inline or point to a requirements file.  
 
-Task - Adding options to definition file
-===
-A mandatory bit that you need to add to your execution-environment definition if you are building on top of minimal or the supported EE is to add the package_manager_path.
-You need to do this because the downstream platform images are build on top of ubi-minimal image which has the default package manager as `microdnf` instead of `dnf`, if you are using builder to build images on top of *only* ubi, fedora or centos image, you will not to specify the package_manager_path in that case.
+For a sample of a detailed definition file, check this link:  
+https://ansible.readthedocs.io/projects/builder/en/stable/definition/#execution-environment-definition
 
-But as we are building on top of the minimal image, Go ahead and add the following lines after the dependencies section:
+== ☑️ Task - Adding options to definition file
 
-```
+A mandatory bit you need to add to your execution-environment definition — if you are building on top of minimal or supported EE — is the `package_manager_path`.  
+You need to do this because the downstream platform images are built on top of UBI-minimal, which uses `microdnf` instead of `dnf`.  
+If you are using builder to build images on top of only UBI, Fedora, or CentOS, you do *not* need to specify the `package_manager_path`.
+
+But as we are building on top of the minimal image, go ahead and add the following lines after the `dependencies` section:
+
+[source,yaml]
+----
 options:
   package_manager_path: /usr/bin/microdnf
-```
+----
 
-Go ahead and save this file using `Ctrl + s` button or from the 'File > Save' option in the Menubar
+Go ahead and save this file using `Ctrl + S` or from the *File → Save* option in the menu bar.
 
-Task - Let's build our EE
-===
-This concludes building our definition file, now Let's go to the Terminal window and type the following command to build our EE
+== ☑️ Task - Let's build our EE
 
-```
+This concludes building our definition file.  
+Now let's go to the terminal window and type the following command to build our EE:
+
+[source,shell]
+----
 ansible-builder build -v 3
-```
-A bit about the command: We are not specifying the definition file name as we have used the default name and `-v 3` signifies the verbosity level of the output, you will see the build steps when you run this command and you can skip adding the `-v 3` as its totally optional.
+----
 
-**NOTE** : `-v 3 ` has nothing to do with version 3, its just specifying the verbosity levels and its totally optional to the build process and not to be confused with `version: 3` in the definition file.
+A bit about the command: we are not specifying the definition file name as we used the default name, and `-v 3` signifies the verbosity level of the output.  
+You will see the build steps when you run this command.  
+Adding `-v 3` is optional.
+
+[NOTE]
+====
+`-v 3` has *nothing* to do with version 3 — it just specifies the verbosity level.  
+Do not confuse it with `version: 3` in the definition file.
+====
 
 This command will take a minute or two to complete.
 
-Task - Let's check what's built
-===
+== ☑️ Task - Let's check what's built
 
-Run the following command to check the image that was created
+Run the following command to check the image that was created:
 
-```
+[source,shell]
+----
 podman images
-```
+----
 
-You will see that it builds an execution environment called `local/ansible-execution-env` by default, this is our execution environment built with the collection we need. You can also specify the name for your EE by adding a tag to the build command, an example below
+You will see that it builds an execution environment called `local/ansible-execution-env` by default — this is our EE built with the collection we specified.  
+You can also specify the name for your EE by adding a tag to the build command, for example:
 
-```
+[source,shell]
+----
 ansible-builder build -t local/netcommon-ee
-```
+----
 
-You can also tag the image post build if you want using the podman CLI using the following command
-```
+You can also tag the image post-build using Podman:
+
+[source,shell]
+----
 podman tag localhost/ansible-execution-env localhost/netcommon-ee
-```
+----
 
-To verify if our EE is built correctly, you can run the following command to go inside the container image.
-```
+To verify if our EE was built correctly, run the following command to go inside the container image:
+
+[source,shell]
+----
 podman run -it localhost/ansible-execution-env bash
-```
+----
 
-Once you are inside the EE, run the collection list command to check if the collection is present inside the EE
-```
+Once you are inside the EE, run the collection list command to check if the collection is present inside the EE:
+
+[source,shell]
+----
 ansible-galaxy collection list
-```
+----
 
-The output should show you `ansible.netcommon` collection. Use the same method for all the subsequent challenges to verify your EE.
+The output should show the `ansible.netcommon` collection.  
+Use the same method for all subsequent challenges to verify your EE.
 
-Hurray, you have now created a basic execution environment, In the next challenge we will look at how to pull collection from Automation hub
+🎉 Hurray! You have now created a basic execution environment.  
+In the next challenge, we will look at how to pull collections from Automation Hub.
 
-✅ Next Challenge
-===
-Press the `Check` button below to go to the next challenge once you’ve completed the tasks.
+== ✅ Next Challenge
 
-🐛 Encountered an issue?
-====
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new).
+Press the *Check* button below to go to the next challenge once you’ve completed the tasks.
 
-<style type="text/css" rel="stylesheet">
-  .lightbox {
-    display: none;
-    position: fixed;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.8);
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: auto;
-    margin-bottom: auto;
-  }
-  .lightbox:target {
-    display: flex;
-  }
-  .lightbox img {
-    /* max-height: 100% */
-    max-width: 60%;
-    max-height: 60%;
-  }
-  img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  h1 {
-    font-size: 18px;
-  }
-  h2 {
-    font-size: 16px;
-    font-weight: 600
-  }
-  h3 {
-    font-size: 14px;
-    font-weight: 600
-  }
-  p span {
-    font-size: 14px;
-  }
-  ul li span {
-    font-size: 14px
-  }
-</style>
+== 🐛 Encountered an issue?
+
+If you have encountered an issue or noticed something not quite right, please open an issue here:  
+https://github.com/ansible/instruqt/issues/new

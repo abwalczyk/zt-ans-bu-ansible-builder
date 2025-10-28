@@ -1,125 +1,96 @@
-👋 Introduction
-===
-This lab is an update on the `ansible-builder`  lab that we released earlier. Execution environment builder (ansible-builder) was updated to version 3.0 with the Ansible Automation Platform 2.4 release.
+= 👋 Introduction
+
+This lab is an update on the `ansible-builder` lab that we released earlier. Execution environment builder (ansible-builder) was updated to version 3.0 with the Ansible Automation Platform 2.4 release.
 
 V3.0 of ansible-builder makes the process of building your own execution environments more efficient by allowing a lot of customizations through the execution environment definition file.
 
 In this lab, we will explore the new features of `ansible-builder` 3.0 and how you can use these features to create your own execution environments.
 
-☑️ Task - Understand the different tabs available in the lab
-===
-On the left hand side, you will see different tabs available to you in this lab,
-- **VSCode** - We will use this tab to create our execution-environment definition files and run `ansible-builder` to create new execution environments locally. You will see a VSCode Interface on this tab that will be used as the developer IDE to create files.
+== ☑️ Task - Understand the different tabs available in the lab
 
-- **Automation Hub** - This tab shows you the Automation Hub setup for this lab environment, this hub will act as the source for the Content collections that we want to bake into our execution environments, as well as the destination for the new execution environments that we create through `ansible-builder`.
+On the left hand side, you will see different tabs available to you in this lab:
 
-☑️ Task - Log into the Automation Hub
-===
+* *VSCode* - We will use this tab to create our execution-environment definition files and run `ansible-builder` to create new execution environments locally. You will see a VSCode Interface on this tab that will be used as the developer IDE to create files.
 
-Click on the **Automation Hub** tab
->**Username**:
-> ```yaml
->admin
->```
->**Password**:
->```yaml
->ansible123!
->```
+* *Automation Hub* - This tab shows you the Automation Hub setup for this lab environment. This hub will act as the source for the content collections that we want to bake into our execution environments, as well as the destination for the new execution environments that we create through `ansible-builder`.
 
-Once you login you can find the content collections available in different repositories on this Automation Hub. After you login you will see the screen below:
-![image.png](https://play.instruqt.com/assets/tracks/w3polihv5eqs/65879c0a7c4bc49fe119c30e6209e370/assets/image.png)
+== ☑️ Task - Log into the Automation Hub
 
-Click on the Validated or Red Hat Certified to see the list of content collections available on this Automation Hub.
+Click on the *Automation Hub* tab.
 
-☑️ Task - Get Familiar with `ansible-builder` CLI
-===
-This simple task is to take you through the command line interface of `ansible-builder`, we will not go in too much detail here but we want you to understand how to interact with `ansible-builder`
-Click on the **VSCode** tab, then click on the *Terminal* option on the toolbar and click the *New Terminal* to open a new terminal
-
-![image.png](https://play.instruqt.com/assets/tracks/w3polihv5eqs/126d81c355cda74add2bfe705f86b2b4/assets/image.png)
-
-This will open a new terminal window for your below the editor window in VSCode. Let's run some quick commands on this terminal (you can copy paste or write these commands in the terminal)
-
-```
-ansible-builder --version
-```
-
-Above command gives you the version of `ansible-builder` installed on the lab machine, For this lab that is `3.0.0` which should also be visible in the command output
-
-```
-ansible-builder --help
-```
-
-This command will give you help output of the `ansible-builder`, from the output you can see three subcommands available, For this lab, as we are focusing mainly on building execution environments, the `build` subcommand is important.
-
-```
-ansible-builder build --help
-```
-
-This command gives you the help section on the `build` subcommand of ansible-builder, please briefly take a look at these different options as they will be used throughout this lab.
-
-
-
-
-✅ Next Challenge
-===
-Press the `Check` button below to go to the next challenge once you’ve completed the tasks.
-
-✅ Additional resources
-===
-
-
-
-🐛 Encountered an issue?
+[NOTE]
 ====
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new).
+*Username:*
+[source,yaml]
+----
+admin
+----
 
-<style type="text/css" rel="stylesheet">
-  .lightbox {
-    display: none;
-    position: fixed;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.8);
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: auto;
-    margin-bottom: auto;
-  }
-  .lightbox:target {
-    display: flex;
-  }
-  .lightbox img {
-    /* max-height: 100% */
-    max-width: 60%;
-    max-height: 60%;
-  }
-  img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  h1 {
-    font-size: 18px;
-  }
-  h2 {
-    font-size: 16px;
-    font-weight: 600
-  }
-  h3 {
-    font-size: 14px;
-    font-weight: 600
-  }
-  p span {
-    font-size: 14px;
-  }
-  ul li span {
-    font-size: 14px
-  }
-</style>
+*Password:*
+[source,yaml]
+----
+ansible123!
+----
+====
+
+Once you log in, you can find the content collections available in different repositories on this Automation Hub.
+
+After you log in, you will see the screen below:
+
+image::https://play.instruqt.com/assets/tracks/w3polihv5eqs/65879c0a7c4bc49fe119c30e6209e370/assets/image.png[]
+
+Click on *Validated* or *Red Hat Certified* to see the list of content collections available on this Automation Hub.
+
+== ☑️ Task - Get Familiar with `ansible-builder` CLI
+
+This simple task is to take you through the command line interface of `ansible-builder`.  
+We will not go into too much detail here, but we want you to understand how to interact with `ansible-builder`.
+
+Click on the *VSCode* tab, then click on the *Terminal* option on the toolbar and select *New Terminal* to open a new terminal.
+
+image::https://play.instruqt.com/assets/tracks/w3polihv5eqs/126d81c355cda74add2bfe705f86b2b4/assets/image.png[]
+
+This will open a new terminal window below the editor window in VSCode.
+
+Let's run some quick commands on this terminal (you can copy-paste or write these commands manually):
+
+[source,shell]
+----
+ansible-builder --version
+----
+
+The above command gives you the version of `ansible-builder` installed on the lab machine.  
+For this lab, that is `3.0.0`, which should also be visible in the command output.
+
+[source,shell]
+----
+ansible-builder --help
+----
+
+This command will give you help output of `ansible-builder`.  
+From the output, you can see three subcommands available.  
+For this lab, as we are focusing mainly on building execution environments, the `build` subcommand is important.
+
+[source,shell]
+----
+ansible-builder build --help
+----
+
+This command gives you the help section on the `build` subcommand of ansible-builder.  
+Please briefly take a look at these different options as they will be used throughout this lab.
+
+== ✅ Next Challenge
+
+Press the *Check* button below to go to the next challenge once you’ve completed the tasks.
+
+== ✅ Additional resources
+
+(Add any additional resource links or documentation references here.)
+
+== 🐛 Encountered an issue?
+
+If you have encountered an issue or have noticed something not quite right, please open an issue here:
+
+https://github.com/ansible/instruqt/issues/new
+
+

@@ -1,124 +1,85 @@
-👋 Introduction
-===
-Another aspect of building an execution environment is not adding authentication tokens to your `ansible.cfg` file for security purposes. In this challenge, we will use an `ansible.cfg` file that doesn't have tokens and use the environment variables in EE definition to download the collections.
+= 👋 Introduction
 
-*Note*: A quick note before we dive-in, the editor we are is VSCode and it maybe unfamiliar for some folks. But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge, if you are confused at any time there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any yaml errors.
+Another aspect of building an execution environment is not adding authentication tokens to your `ansible.cfg` file for security purposes.  
+In this challenge, we will use an `ansible.cfg` file that doesn't have tokens and instead use environment variables in the EE definition to download the collections.
 
-☑️ Task - Definition file from last challenge
-===
+NOTE: A quick note before we dive in — the editor we are using is VSCode and it may be unfamiliar for some folks.  
+We will keep the instructions simple enough and gradually build upon what we are doing in each challenge.  
+If you are confused at any time, there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge.  
+You can copy and replace content for your current definition file if you are unable to solve any YAML errors.
 
-On the VSCode tab on the left side you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called as `execution-environment.yml`.
+== ☑️ Task - Definition file from last challenge
 
-This is the same file from last challenge when we pulled the collection from Automation hub after fixing the cert error. This will be starting point for this challenge.
+On the VSCode tab on the left side, you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called `execution-environment.yml`.
 
-For this task, just verify the content of the definition file to ensure that it matches with what we learned in last challenge.
-Also verify the `ansible.cfg` file in the challenge, just ensure that this file doesn't include any tokens now.
+This is the same file from the last challenge when we pulled the collection from Automation Hub after fixing the certificate error.  
+This will be the starting point for this challenge.
 
-☑️ Task - Add an ARG to prepend_galaxy section
-===
-Add a line above or below the following line
+For this task:
+- Verify the content of the definition file to ensure it matches what we learned in the last challenge.  
+- Also verify that the `ansible.cfg` file in the challenge does not include any tokens now.
 
-```
+== ☑️ Task - Add an ARG to `prepend_galaxy` section
+
+Add a line above or below the following line:
+
+----
 - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
-```
+----
+
 Add this line:
-```
+
+----
 - ARG ANSIBLE_GALAXY_SERVER_RH_CERTIFIED_REPO_TOKEN
-```
+----
 
-We are telling ansible-builder to pick this token from the local machine and to do so we will need to first populate this token on the local machine, let's do that in the next challenge.
+We are telling `ansible-builder` to pick this token from the local machine.  
+To do so, we will need to first populate this token on the local machine — let's do that in the next task.
 
+== ☑️ Task - Populate local machine with the hub token
 
-☑️ Task - Populate local machine with the hub token
-===
-Go to Automation Hub tab and login using below credentials
-> Username: `admin`
->
+Go to the *Automation Hub* tab and log in using the credentials below:
+
+> Username: `admin`  
 > Password: `ansible123!`
 
-Go to Collection > API token management. Then click on Load token
+Navigate to **Collections → API token management**, then click on *Load token*.  
 
-Once loaded, copy the token to the clipboard, you an also click the button in below screenshot
+Once loaded, copy the token to your clipboard — you can also click the copy button as shown below:
 
-![image.png](https://play.instruqt.com/assets/tracks/w3polihv5eqs/b491b805fae9b05dbb2f59d49a24a717/assets/image.png)
+image::https://play.instruqt.com/assets/tracks/w3polihv5eqs/b491b805fae9b05dbb2f59d49a24a717/assets/image.png[]
 
-Now come back to the VSCode tab and click on Terminal, to open a new terminal.
-Once done, type the following command to populate the token locally
+Now, return to the VSCode tab and open a new terminal.  
+Once done, type the following command to populate the token locally:
 
-```
+----
 export ANSIBLE_GALAXY_SERVER_RH_CERTIFIED_REPO_TOKEN=<paste_token_here>
-```
+----
 
-**NOTE** Make sure to paste the token afte the "=" sign in the above command.
+NOTE: Make sure to paste the token after the `=` sign in the above command.
 
+== ☑️ Task - Let's build the EE
 
-☑️ Task - Let's build the EE
-===
 Now that you have populated the token locally, let's try rebuilding our execution environment.
-Run the following command
 
-```
+Run the following command:
+
+----
 ansible-builder build -v 3 --build-arg ANSIBLE_GALAXY_SERVER_RH_CERTIFIED_REPO_TOKEN
-```
+----
 
 The above command will pass the local token to the definition file and make the token available to the build process.
 
-Hopefully, if you have done everything correctly you should have your new execution environment, this way you didn't have to save the token inside your ansible.cfg file which can be advantageous when you have to save the EE definition to source control systems like git, as you won't be saving token there for anyone to have access to your Automation hub.
+Hopefully, if you have done everything correctly, you should have your new execution environment.  
+This way, you didn’t have to save the token inside your `ansible.cfg` file — which is advantageous when saving the EE definition to source control systems like Git, as you won’t be exposing your Automation Hub token.
 
-Try the next tasks yourself of changing the name of the EE and pushing it to your automation hub.
+Try the next tasks yourself:
+- Change the name of the EE  
+- Push it to your Automation Hub
 
-This was the final challenge and hopefully this lab can help you understand the changes in ansible-builder v3 and its benefits.
+This was the final challenge, and hopefully this lab has helped you understand the changes in `ansible-builder` v3 and its benefits.
 
-🐛 Encountered an issue?
-====
-If you have encountered an issue or have noticed something not quite right, please [open an issue](https://github.com/ansible/instruqt/issues/new).
+== 🐛 Encountered an issue?
 
-<style type="text/css" rel="stylesheet">
-  .lightbox {
-    display: none;
-    position: fixed;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.8);
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: auto;
-    margin-bottom: auto;
-  }
-  .lightbox:target {
-    display: flex;
-  }
-  .lightbox img {
-    /* max-height: 100% */
-    max-width: 60%;
-    max-height: 60%;
-  }
-  img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  h1 {
-    font-size: 18px;
-  }
-  h2 {
-    font-size: 16px;
-    font-weight: 600
-  }
-  h3 {
-    font-size: 14px;
-    font-weight: 600
-  }
-  p span {
-    font-size: 14px;
-  }
-  ul li span {
-    font-size: 14px
-  }
-</style>
+If you have encountered an issue or noticed something not quite right, please open an issue:  
+https://github.com/ansible/instruqt/issues/new
