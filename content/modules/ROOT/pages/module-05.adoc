@@ -3,14 +3,14 @@
 Another aspect of building an execution environment is not adding authentication tokens to your `ansible.cfg` file for security purposes.  
 In this challenge, we will use an `ansible.cfg` file that doesn't have tokens and instead use environment variables in the EE definition to download the collections.
 
-NOTE: A quick note before we dive in — the editor we are using is VSCode and it may be unfamiliar for some folks.  
+NOTE: A quick note before we dive in — the editor we are using is VS Code and it may be unfamiliar for some folks.  
 We will keep the instructions simple enough and gradually build upon what we are doing in each challenge.  
 If you are confused at any time, there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge.  
 You can copy and replace content for your current definition file if you are unable to solve any YAML errors.
 
 == ☑️ Task - Definition file from last challenge
 
-On the VSCode tab on the left side, you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called `execution-environment.yml`.
+On the VS Code tab on the left side, you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called `execution-environment.yml`.
 
 This is the same file from the last challenge when we pulled the collection from Automation Hub after fixing the certificate error.  
 This will be the starting point for this challenge.
@@ -45,11 +45,9 @@ Go to the *Automation Hub* tab and log in using the credentials below:
 
 Navigate to **Collections → API token management**, then click on *Load token*.  
 
-Once loaded, copy the token to your clipboard — you can also click the copy button as shown below:
+Once loaded, copy the token to your clipboard:
 
-image::https://play.instruqt.com/assets/tracks/w3polihv5eqs/b491b805fae9b05dbb2f59d49a24a717/assets/image.png[]
-
-Now, return to the VSCode tab and open a new terminal.  
+Now, return to the VS Code tab and open a new terminal.  
 Once done, type the following command to populate the token locally:
 
 ----

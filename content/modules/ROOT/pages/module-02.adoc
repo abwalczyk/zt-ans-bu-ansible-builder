@@ -1,11 +1,11 @@
 = 👋 Introduction
 
 In this section we will create an execution environment using `ansible-builder`.  
-You will notice that this section only has the *VSCode* tab enabled — this is because we will not be using Automation Hub to pull collections for this challenge.
+You will notice that this section only has the *VS Code* tab enabled — this is because we will not be using Automation Hub to pull collections for this challenge.
 
 [NOTE]
 ====
-A quick note before we dive in: the editor we are using is VSCode and it may be unfamiliar for some folks.  
+A quick note before we dive in: the editor we are using is VS Code and it may be unfamiliar for some folks.  
 But we will keep the instructions simple enough and gradually build upon what we are doing in each challenge.  
 If you are confused at any time, there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge.  
 You can copy and replace content for your current definition file if you are unable to solve any YAML errors.
@@ -20,7 +20,7 @@ Please go through the tasks in this challenge to understand how to interact with
 
 == ☑️ Task - The definition file
 
-On the *VSCode* tab on the left side you will see that we have a directory opened called `minimal-downstream-from-galaxy` and this directory has a file called `execution-environment.yml`.
+On the *VS Code* tab on the left side you will see that we have a directory opened called `minimal-downstream-from-galaxy` and this directory has a file called `execution-environment.yml`.
 
 This file is our execution environment definition file, and the default name for this file is `execution-environment.yml`.  
 By *default* we mean that if we just run the `build` subcommand of `ansible-builder` in this directory, `ansible-builder` will understand that it needs to look at this file for the definition of the execution environment it needs to create.
@@ -103,9 +103,6 @@ There are different dependencies you can specify for your execution environment 
 
 One advantage of builder v3 is that you can specify dependencies inline, compared to builder v1 where you had to specify dependencies in a `requirements.yml` file.  
 v3 gives you both options — either specify inline or point to a requirements file.  
-
-For a sample of a detailed definition file, check this link:  
-https://ansible.readthedocs.io/projects/builder/en/stable/definition/#execution-environment-definition
 
 == ☑️ Task - Adding options to definition file
 
@@ -191,7 +188,7 @@ In the next challenge, we will look at how to pull collections from Automation H
 
 == ✅ Next Challenge
 
-Press the *Check* button below to go to the next challenge once you’ve completed the tasks.
+Press the *Next* button below to go to the next challenge once you’ve completed the tasks.
 
 == 🐛 Encountered an issue?
 

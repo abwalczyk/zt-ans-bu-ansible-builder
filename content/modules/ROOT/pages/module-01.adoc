@@ -10,7 +10,7 @@ In this lab, we will explore the new features of `ansible-builder` 3.0 and how y
 
 On the left hand side, you will see different tabs available to you in this lab:
 
-* *VSCode* - We will use this tab to create our execution-environment definition files and run `ansible-builder` to create new execution environments locally. You will see a VSCode Interface on this tab that will be used as the developer IDE to create files.
+* *VS Code* - We will use this tab to create our execution-environment definition files and run `ansible-builder` to create new execution environments locally. You will see a VS Code Interface on this tab that will be used as the developer IDE to create files.
 
 * *Automation Hub* - This tab shows you the Automation Hub setup for this lab environment. This hub will act as the source for the content collections that we want to bake into our execution environments, as well as the destination for the new execution environments that we create through `ansible-builder`.
 
@@ -35,10 +35,6 @@ ansible123!
 
 Once you log in, you can find the content collections available in different repositories on this Automation Hub.
 
-After you log in, you will see the screen below:
-
-image::https://play.instruqt.com/assets/tracks/w3polihv5eqs/65879c0a7c4bc49fe119c30e6209e370/assets/image.png[]
-
 Click on *Validated* or *Red Hat Certified* to see the list of content collections available on this Automation Hub.
 
 == ☑️ Task - Get Familiar with `ansible-builder` CLI
@@ -46,11 +42,11 @@ Click on *Validated* or *Red Hat Certified* to see the list of content collectio
 This simple task is to take you through the command line interface of `ansible-builder`.  
 We will not go into too much detail here, but we want you to understand how to interact with `ansible-builder`.
 
-Click on the *VSCode* tab, then click on the *Terminal* option on the toolbar and select *New Terminal* to open a new terminal.
+Click on the *VS Code* tab, then click on the *Terminal* option on the toolbar and select *New Terminal* to open a new terminal.
 
 image::https://play.instruqt.com/assets/tracks/w3polihv5eqs/126d81c355cda74add2bfe705f86b2b4/assets/image.png[]
 
-This will open a new terminal window below the editor window in VSCode.
+This will open a new terminal window below the editor window in VS Code.
 
 Let's run some quick commands on this terminal (you can copy-paste or write these commands manually):
 
@@ -81,11 +77,7 @@ Please briefly take a look at these different options as they will be used throu
 
 == ✅ Next Challenge
 
-Press the *Check* button below to go to the next challenge once you’ve completed the tasks.
-
-== ✅ Additional resources
-
-(Add any additional resource links or documentation references here.)
+Press the *Next* button below to go to the next challenge once you’ve completed the tasks.
 
 == 🐛 Encountered an issue?
 

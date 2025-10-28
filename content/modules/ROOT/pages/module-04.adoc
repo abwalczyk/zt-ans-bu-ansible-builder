@@ -4,13 +4,13 @@ In this section, we will create an execution environment using `ansible-builder`
 
 For this challenge, we are going to fix the SSL errors that we faced in the last challenge properly instead of just ignoring the certificate errors.
 
-NOTE: A quick note before we dive in — the editor we are using is VSCode and it may be unfamiliar for some folks. We will keep the instructions simple enough and gradually build upon what we are doing in each challenge. If you are confused at any time, there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any YAML errors.
+NOTE: A quick note before we dive in — the editor we are using is VS Code and it may be unfamiliar for some folks. We will keep the instructions simple enough and gradually build upon what we are doing in each challenge. If you are confused at any time, there is a folder called `solution-definition` adjacent to `execution-environment.yml` which will have the solution for each challenge. You can copy and replace content for your current definition file if you are unable to solve any YAML errors.
 
 Please go through the tasks in this challenge to understand how to interact with `ansible-builder` v3.
 
 == ☑️ Task - Definition file from last challenge
 
-On the VSCode tab on the left side, you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called `execution-environment.yml`.
+On the VS Code tab on the left side, you will see that we have a directory opened called `minimal-downstream-from-hub-certs` and this directory has a file called `execution-environment.yml`.
 
 This file is the same as the one we created from the last challenge when we pulled the collection from Automation Hub. This will be the starting point for this challenge, and we will fix the SSL error from the last challenge without using a workaround.
 
@@ -136,7 +136,7 @@ Let's verify if the image is pushed to Automation Hub:
 
 == ✅ Next Challenge
 
-Press the *Check* button below to go to the next challenge once you’ve completed the tasks.
+Press the *Next* button below to go to the next challenge once you’ve completed the tasks.
 
 == 🐛 Encountered an issue?
 
