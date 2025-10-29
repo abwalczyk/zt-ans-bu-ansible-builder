@@ -1,65 +1,79 @@
-= ServiceNow Automation with Ansible
+= Get Started With Ansible-builder
 :toc:
 :toc-placement!:
 
-This repository contains learning materials and automation scripts for integrating Ansible Automation Platform with ServiceNow ITSM.
+This repository contains learning materials and automation scripts for creating, customizing, and managing **Execution Environments (EEs)** using **Ansible Builder** in Red Hat Ansible Automation Platform.
 
 toc::[]
 
 == Overview
 
-This workshop demonstrates how to use the `servicenow.itsm` certified collection to automate common ServiceNow operations including:
+This workshop demonstrates how to use **Ansible Builder** to automate the process of building and maintaining execution environments — portable, containerized runtimes that package everything Ansible needs to run your automation reliably across systems.
 
-* Creating and managing incidents
-* Problem management workflows  
-* Change request automation
-* CMDB management and updates
-* Record cleanup and maintenance
-* ServiceNow inventory integration
+You will learn how to:
+
+* Understand the structure and purpose of Execution Environments
+* Create and customize EEs using `ansible-builder`
+* Add Python, system, and collection dependencies
+* Integrate with private Automation Hub instances
+* Handle custom SSL certificates and registry authentication
+* Test and publish your EEs to Automation Controller
 
 == Repository Structure
 
 [source]
 ----
-├── config/                    # Infrastructure configuration
-│   ├── firewall.yaml
-│   ├── instances.yaml
-│   └── networks.yaml
+├── config/                    # Build configuration and environment files
+│   ├── requirements.yml        # Collection dependencies
+│   ├── bindep.txt              # System dependencies
+│   └── execution-environment.yml # EE definition file
 ├── content/                   # Workshop content (AsciiDoc)
 │   └── modules/ROOT/
-│       ├── pages/            # Workshop modules
-│       └── assets/images/    # Workshop screenshots
-├── runtime-automation/        # Lab automation scripts
-├── setup-automation/          # Environment setup scripts
-└── utilities/                # Lab utility scripts
+│       ├── pages/             # Workshop modules
+│       └── assets/images/     # Workshop diagrams and screenshots
+├── runtime-automation/        # Scripts to test and validate built EEs
+├── setup-automation/          # Environment setup and registry preparation
+└── utilities/                 # Helper scripts (logging, cleanup, etc.)
 ----
 
 == Getting Started
 
 The workshop content is organized into six modules:
 
-1. **Creating Incidents** - Learn to create ServiceNow incidents via Ansible
-2. **Problem Management** - Attach problems to existing incidents
-3. **Change Management** - Create and manage change requests
-4. **CMDB Management** - Query and update configuration items
-5. **Record Cleanup** - Automate record maintenance tasks
-6. **ServiceNow Inventory** - Use ServiceNow as an Ansible inventory source
+1. **Introduction to Execution Environments** - Understand what EEs are and why they matter
+2. **Using Ansible Builder** - Create and inspect your first EE build context
+3. **Adding Dependencies** - Include system, Python, and collection dependencies
+4. **Working with Automation Hub** - Configure access to private repositories and tokens
+5. **Handling Certificates and Auth** - Manage secure connections and cert validation
+6. **Publishing and Testing** - Push your EE to a registry and use it in Automation Controller
 
 == Prerequisites
 
-* Access to ServiceNow instance
-* Ansible Automation Platform or AWX
-* Basic understanding of Ansible playbooks
-* Familiarity with ITSM concepts
+* Access to Ansible Automation Platform or AWX
+* Installed `ansible-builder` and `podman` (or `buildah`)
+* Access to a private Automation Hub (or Red Hat Certified Content)
+* Basic understanding of Ansible playbooks and collections
+* Familiarity with YAML file structures
 
 == Lab Environment
 
 The lab environment includes:
-* Pre-configured Automation Controller
-* ServiceNow developer instance
-* Sample playbooks and job templates
-* Test infrastructure for hands-on exercises
+
+* **VS Code** – Preconfigured workspace for editing EE files
+* **Ansible Builder** – Installed and ready to use
+* **Automation Hub** – Source for collections and dependencies
+* **Podman/Buildah** – Tools for container image building
+* **Automation Controller** – For testing and running jobs with custom EEs
+
+[TIP]
+====
+You can use verbosity flags for deeper insight during builds:
+
+`ansible-builder build -v 3`
+
+This helps troubleshoot issues like missing collections, failed downloads, or invalid certificates.
+====
 
 == Support
 
-For issues or questions about this workshop content, please open an issue in the repository.
+For issues or questions about this workshop content, please open an issue in the repository or contact your workshop facilitator.

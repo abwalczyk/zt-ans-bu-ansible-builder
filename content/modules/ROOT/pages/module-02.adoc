@@ -1,7 +1,6 @@
 = 👋 Introduction
 
 In this section we will create an execution environment using `ansible-builder`.  
-You will notice that this section only has the *VS Code* tab enabled — this is because we will not be using Automation Hub to pull collections for this challenge.
 
 [NOTE]
 ====
@@ -193,5 +192,5 @@ Press the *Next* button below to go to the next challenge once you’ve complete
 == 🐛 Encountered an issue?
 
 If you have encountered an issue or noticed something not quite right, please open an issue here:
- 
+
 https://github.com/ansible/workshops/issues

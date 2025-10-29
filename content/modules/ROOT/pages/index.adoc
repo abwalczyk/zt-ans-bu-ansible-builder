@@ -4,24 +4,27 @@
 
 image::rhel-logo-black.jpg[Red Hat Enterprise Linux Logo,width=300,align=center]
 
-Welcome to the ServiceNow Automation with Ansible workshop. This hands-on lab will teach you how to integrate Ansible Automation Platform with ServiceNow ITSM to automate common IT service management tasks.
+Welcome to the **Ansible Builder and Execution Environments** workshop.  
+This hands-on lab teaches you how to create and customize Ansible Execution Environments (EEs) for use in Automation Controller and other Ansible Automation Platform components.
 
 toc::[]
 
 == Workshop Overview
 
-In this workshop, you will learn how to use the `servicenow.itsm` certified collection to automate ServiceNow operations through Ansible playbooks and job templates. You'll explore real-world scenarios that demonstrate the power of combining Ansible's automation capabilities with ServiceNow's ITSM platform.
+In this workshop, you will learn how to use **Ansible Builder** to define, build, and manage execution environments that contain the exact dependencies needed for your automation.  
+You’ll also learn how Ansible Builder integrates with **Automation Hub**, **Automation Controller**, and **private registries** to streamline automation at scale.
 
 === What You'll Learn
 
 By the end of this workshop, you will be able to:
 
-* Create and manage ServiceNow incidents using Ansible
-* Implement automated problem management workflows
-* Automate change request processes
-* Query and update configuration items in the CMDB
-* Perform automated record cleanup and maintenance
-* Use ServiceNow as a dynamic inventory source for Ansible
+* Understand the purpose and structure of Execution Environments
+* Build a custom EE using `ansible-builder`
+* Include additional Python and system dependencies
+* Reference private Automation Hub collections
+* Use build arguments to handle certificates and secure registries
+* Troubleshoot and optimize your EE build process
+* Push and use the resulting EE in Automation Controller
 
 === Workshop Modules
 
@@ -31,12 +34,12 @@ This workshop is organized into six progressive modules:
 |===
 |Module |Title |Focus Area
 
-|1 |xref:module-01.adoc[Creating Incidents] |Learn the basics of incident creation through automation
-|2 |xref:module-02.adoc[Problem Management] |Attach problems to incidents and manage relationships
-|3 |xref:module-03.adoc[Change Management] |Automate change request creation and approval workflows
-|4 |xref:module-04.adoc[CMDB Management] |Query, create, and update configuration items
-|5 |xref:module-05.adoc[Record Cleanup] |Implement automated record maintenance and cleanup
-|6 |xref:module-06.adoc[ServiceNow Inventory] |Use ServiceNow CMDB as an Ansible inventory source
+|1 |xref:module-01.adoc[Introduction to Execution Environments] |Understand the components and purpose of EEs
+|2 |xref:module-02.adoc[Using ansible-builder] |Learn how to create and inspect the EE build context
+|3 |xref:module-03.adoc[Adding Dependencies] |Add Python, system, and collection requirements
+|4 |xref:module-04.adoc[Working with Automation Hub] |Connect to and pull collections from a private Hub
+|5 |xref:module-05.adoc[Handling Certificates and Auth] |Secure your builds and handle cert validation
+|6 |xref:module-06.adoc[Publishing and Testing] |Push your EE to a registry and use it in Controller
 |===
 
 == Lab Environment
@@ -46,30 +49,36 @@ This workshop is organized into six progressive modules:
 Before starting this workshop, ensure you have:
 
 * Basic understanding of Ansible concepts and playbooks
-* Familiarity with ITIL/ITSM terminology
+* Familiarity with Automation Controller and Automation Hub
 * Access to the provided lab environment
 
 === Lab Access
 
-The terminal window to your right is already logged into the lab environment as the `{ssh_user}` user via SSH. All steps in this lab should be completed as the `{ssh_user}` user.
+The terminal window to your right is already logged into the lab environment as the `{ssh_user}` user via SSH.  
+All steps in this lab should be completed as the `{ssh_user}` user.
 
 You have access to the following components:
 
-* **Automation Controller**: Pre-configured with job templates and inventories
-* **ServiceNow Instance**: Developer instance with sample data
-* **VS Code**: Integrated development environment with sample playbooks
-* **Command Line**: Direct access to the control node
+* **VS Code**: Integrated environment for editing EE definition files
+* **Ansible Builder**: Installed and ready for use
+* **Automation Hub**: Private hub with certified and validated collections
+* **Podman/Buildah**: Container tools for building and running EEs
+* **Automation Controller**: Configured to consume built EEs
 
 === Getting Started
 
 To begin the workshop:
 
-1. Review the environment setup in the terminal
-2. Familiarize yourself with the VS Code interface
-3. Access the Automation Controller using the provided credentials
-4. Navigate to Module 1 to start your learning journey
+1. Open VS Code in your workspace
+2. Review the `execution-environment.yml` and supporting files
+3. Build your first EE using `ansible-builder build`
+4. Explore the build context and output logs to understand each layer
 
 [TIP]
 ====
-Keep the ServiceNow and Automation Controller tabs open throughout the workshop as you'll be switching between them frequently to observe the results of your automation tasks.
+You can re-run your build with increasing verbosity using the `-v` option:
+`ansible-builder build -v 3`
+
+This is useful for debugging missing dependencies, certificate issues, or Hub authentication problems.
 ====
+
