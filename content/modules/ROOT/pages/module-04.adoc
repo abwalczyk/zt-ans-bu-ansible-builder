@@ -141,4 +141,5 @@ Press the *Next* button below to go to the next challenge once you’ve complete
 == 🐛 Encountered an issue?
 
 If you have encountered an issue or have noticed something not quite right, please open an issue:  
-https://github.com/ansible/instruqt/issues/new
+
+https://github.com/ansible/workshops/issues
