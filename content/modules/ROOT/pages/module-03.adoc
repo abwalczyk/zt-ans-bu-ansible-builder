@@ -59,24 +59,10 @@ The next section, called `additional_build_steps`, tells the builder about the a
 
 The idea here is to copy the Ansible config file to the execution environment so that `ansible-galaxy` can point to the local Automation Hub.
 
-== ☑️ Task - Let's re-run ansible-builder
 
-Please open the terminal window and re-run `ansible-builder`:
+== ☑️ Task - Avoid SSL error while building
 
-[source,bash]
-----
-ansible-builder build -v 3
-----
-
-You will see that the build returns an SSL certificate error when trying to pull collections from Automation Hub. To fix this, you will need to bypass the certificate errors in the definition file.
-
-Let's do that in the next task.
-
-NOTE: We will also show how you can add certificates properly in the next challenge.
-
-== ☑️ Task - Bypass SSL error while building
-
-To bypass the SSL error, add the following section in the `execution-environment.yml` file:
+To avoid an SSL error, add the following section in the `execution-environment.yml` file:
 
 [source,yaml]
 ----
@@ -86,7 +72,7 @@ build_arg_defaults:
 
 This option will add the `--ignore-certs` option to the `ansible-galaxy` CLI when `ansible-builder` is building the execution environment. This is just a workaround — we will provide a permanent solution in the next challenge. The idea here is to describe different customizations you can do in the build process.
 
-Let's re-run `ansible-builder`:
+Please open the terminal window and re-run `ansible-builder`:
 
 [source,bash]
 ----
