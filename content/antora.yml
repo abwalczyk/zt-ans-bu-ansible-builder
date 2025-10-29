@@ -6,7 +6,7 @@ nav:
 
 asciidoc:
   attributes:
-    lab_name: "ServiceNow Automation with Ansible"
+    lab_name: "Get started with ansible-builder"
     release-version: master
     page-pagination: true
     my_var: "foo"
